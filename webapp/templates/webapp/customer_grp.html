@@ -1,0 +1,92 @@
+{% extends 'webapp/base.html' %}
+
+{% load bootstrap3 %}
+{%block extrahead%}
+<script type="text/javascript">
+	$(function ()
+        {
+		moveItems('#filter_select', '#filter_select3');
+
+		$('#left').click(function () {
+	   	 moveItems('#filter_select3', '#filter_select');
+		});
+	 
+		$('#right').click( function () {
+		    moveItems('#filter_select', '#filter_select3');
+		});
+		
+		$("#cust_grp").submit( function (){
+			$('#filter_select3 option').prop('selected', true);
+		});
+	});
+	function moveItems(origin, dest) {
+                   $(origin).find(':selected').appendTo(dest);
+                }
+
+	function select_vm() {
+		$('select#filter_select option').removeAttr("selected");
+		var x = $("#customer_grp").val();
+		$('#filter_select option[name*="'+x+'"]').prop('selected',true);
+		moveItems('#filter_select','#filter_select3')
+	};
+
+</script>
+{%endblock%}
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <div class="row">
+      <div>
+        <ol class="breadcrumb">
+          <li class="active">Add Customer Group</li>
+            <li><a href="{{back_url}}" title="back to previous page">Back</a></li>
+                <li class="text-danger">{{error_msg}}</li>
+        </ol>
+      </div> <!-- div class="col..." -->
+    <div class="col-xs-4">
+    <!-- Catalog selector -->
+        <!-- end Catalog selector -->
+    </div> <!-- div class="col-xs..." -->
+  </div> <!-- div class="row" -->
+
+  <!--<div class="row">
+    <div class="col-xs-12"><h3>Djracula/App Summary </h3></div>
+        </div>-->
+<div>-----------------------------------------------------------------------------------------------------------------------</div>
+<form  id = "cust_grp" class="form" role="form" action="/webapp/customergroup/" method="post">
+{% csrf_token %}
+<div class="form-group">
+        <span>Customer Group Name :</span>
+        <input type='text' name='customer_grp'  placeholder="Group Name "value='{{group_name}}' style="margin-left:27px;" id= 'customer_grp' onblur=select_vm() required/> <span class="text-danger">*Free text filter</span>
+</div>
+<div class="form-group" id ='vm'>
+        <span>Select VM/Servers to group : </span>
+	<select multiple id ="filter_select" style="vertical-align:middle;height:500px;">
+        {%for vm in vmlist%}
+                 <option value={{vm.value}} name="{{vm.name}}" {%if vm.value in selected_vmlist%} selected="selected" {%endif%}>{{vm.name}}</option>
+        {%endfor%}
+	</select>
+
+	<input type="button" id="left" value="<" />
+        <input type="button" id="right" value=">" />
+	
+	<select multiple='multiple' id ="filter_select3" style="vertical-align:middle;height:500px;" name="vmlist">
+        </select>
+
+
+
+</div>
+
+
+<input type="hidden" name="groupid" value="{{groupid}}"/>
+<div>
+{% buttons %}
+	<button type="submit" class="btn btn-primary"> Apply</button>
+        <button type="reset" class="btn" onClick = "location.href='/webapp/'">Cancel</button>
+{% endbuttons %}
+</form>
+</div>
+
+{% endblock %}
+
+

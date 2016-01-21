@@ -1,0 +1,65 @@
+{% extends 'webapp/base.html' %}
+
+{% load bootstrap3 %}
+
+{% block title %}
+    Forms
+{% endblock %}
+
+{% block content %}
+
+    <form role="form" method="post">
+        {% csrf_token %}
+        {% bootstrap_form form %}
+        {% buttons submit='OK' reset="Cancel" %}{% endbuttons %}
+    </form>
+
+{% endblock %}
+
+
+{% extends "webapp/base.html" %}
+{%block body%}
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <div class="row">
+      <div>
+        <ol class="breadcrumb">
+          <li class="active">Add Customer Group</li>
+            <li><a href="{{back_url}}" title="back to previous page">Back</a></li>
+                <li class="text-danger">{{error_msg}}</li>
+        </ol>
+      </div> <!-- div class="col..." -->
+    <div class="col-xs-4">
+    <!-- Catalog selector -->
+        <!-- end Catalog selector -->
+    </div> <!-- div class="col-xs..." -->
+  </div> <!-- div class="row" -->
+
+  <!--<div class="row">
+    <div class="col-xs-12"><h3>Djracula/App Summary </h3></div>
+        </div>-->
+
+
+
+<div>-----------------------------------------------------------------------------------------------------------------------</div>
+<form  class="form" role="form" action="/webapp/customergroup/" method="post">
+{% csrf_token %}
+<div class="form-group">
+        <span>Customer Group Name :</span>
+        <input type='text' name='customer_grp' value='{{group_name}}' id= 'customer_grp' required/> <span class="text-danger">*</span>
+</div>
+<div class="form-group">
+	 <span>Select VMs to group : </span>
+        <input type="text" id="filterinput" placeholder="Search VM  name"/><span      class="text-danger">*</span>
+</div>
+<select multiple id ="filter_select" style="margin-left:13%;" name="vmlist" required>
+        {%for vm in vmlist%}
+                 <option value="{{vm.name}}" {%if vm.value in selected_vmlist%}selected=""{%endif%}>{{vm.name}}</option>
+        {%endfor%}
+</select>
+
+<input type="hidden" name="groupid" value="{{groupid}}"/>
+<div><button id='submit' type='submit' class = "btn btn-primary" title = "Submit" name='btnsubmit' value='1'>Submit</button></div>
+</form>
+</div>
+{%endblock%}

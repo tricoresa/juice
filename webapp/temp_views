@@ -1,0 +1,132 @@
+b0VIM 7.4
+svc-juice
+smdctcsdev02.tricorems.com
+/u01/juice/Django_juice/webapp/views.py
+utf-8
+U3210
+#"! 
+		if groupid:
+		group_vmlist = []
+		group_name = ''
+		print (groupid)
+		groupid = int(self.reuest.GET.get('groupid') or 0)
+		vmlist = session.get(baseUri+'/Vm/id')
+	def get(self,request):
+class CustomerGroup(View):
+		return render(request,'webapp/customer_grplist.html',{'reslist':reslist})
+			reslist.append(res_dict)
+				res_dict['vmlist'].append(vm.vm)
+			for vm in vmgroupobj:
+			vmgroupobj = JuiceGroupvm.objects.filter(groupid = customer.groupnameid)
+			res_dict['vmlist'] = []
+			res_dict['customername']  = customer.name
+			res_dict['customergrp_id'] = customer.groupnameid
+			res_dict =  {}
+			vmlist = []
+		for customer in groupObj:
+		groupObj = JuiceGroupnames.objects.all()
+		reslist = []
+	def get(self,request):
+class CustomerGroupList (View):
+		return render(request,'webapp/dashboard.html',{'reslist':reslist})		
+			reslist.append(res_dict)
+			res_dict['total_size'] = total_size
+			res_dict['disk_list']  = virtualist+physicalist
+			res_dict['vm_name']= v['name']
+						virtualist.append(virtual_dict)
+							virtual_dict['repo_name'] = virtualdiskObj.json()['repositoryId']['name']
+						if  virtualdiskObj.json().get('repositoryId'): 
+						total_size += int(virtual_disk_size)
+						virtual_dict['size'] = virtual_disk_size
+						virtual_disk_size = bytesto(virtualdiskObj.json()['onDiskSize'],'g')
+						virtualdiskObj = session.get(baseUri+'/VirtualDisk/'+str(virtualdisk_id))
+						#for repo name and disk size
+					
+						virtual_dict['id'] = virtualdisk_id
+						virtualdisk_id = disk.get('virtualDiskId').get('value')
+						virtual_dict['name'] = diskname
+						virtual_dict = {}
+					if diskname and diskname.lower().find('_swap') ==  -1 and diskname.lower().find('_root') == -1:
+					diskname = disk.get('virtualDiskId').get('name') 
+				elif disk.get('virtualDiskId') != None:	
+						physicalist.append(physical_dict)
+						physical_dict['repo_name'] = ""
+						total_size += int(physical_disk_size)
+						physical_dict['size'] = physical_disk_size
+						physical_disk_size = bytesto(storageObj.json()['size'],'g')
+						storageObj = session.get(baseUri+'/StorageElement/'+str(physicaldisk_id))
+						#for physical disk size
+						physical_dict['id'] = physicaldisk_id
+						physicaldisk_id = disk.get('storageElementId').get('value')
+						physical_dict['name'] = diskname
+					if diskname and diskname.lower().find('_swap') == -1  and diskname.lower().find('_root') == -1:
+					physical_dict = {}
+					diskname =  disk.get('storageElementId').get('name')
+				if disk.get('storageElementId') != None:
+			for disk in diskMapId.json():
+			diskMapId = session.get(baseUri+'/Vm/'+str(id)+'/VmDiskMapping')
+			vmname = v['name']
+			id = v['value']
+			virtualist = []
+			physicalist = []
+			total_size = 0
+			res_dict = {}
+		for v in vmIds.json():
+		vmIds = session.get(baseUri+'/Vm/id')
+		reslist = []
+	def get(self,request):
+class Dashboard(View):
+baseUri='https://smdcovmm01.tricorems.com:7002/ovm/core/wsapi/rest'
+session.headers.update({'Accept': 'application/json', 'Content-Type': 'application/json'})
+session.auth=('juice','tcs_juice')
+session.verify= False #disables SSL certificate verification
+session=requests.Session()
+	return(result)
+		result = result / bsize
+	for i in range(unit[to]):
+	result = float(bytes)
+	unit = {'k' : 1, 'm': 2, 'g' : 3, 't' : 4, 'p' : 5, 'e' : 6 }
+def bytesto(bytes, to, bsize=1024):
+from django.shortcuts import render,get_object_or_404,redirect
+from django.views.generic.base import View
+requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = 'RC4-SHA'
+import requests
+import sys,certifi
+from webapp.models import JuiceGroupnames,JuiceGroupvm
+from django.shortcuts import render
+			return render(request,'webapp/customer_grp.html',{'vmlist':vmlist.json(),'back_url':request.META.get('HTTP_REFERER') or '/webapp'})	
+			vmlist = session.get(baseUri+'/Vm/id') 
+			print (e)
+			error_msg = e
+		except Exception as e:
+				return redirect('/webapp/customer_grplist?update=1')
+					JuiceGroupvm(groupid = existingid,vm=vm_name).save()
+				for vm_name in selected_vms:
+				obj2 = JuiceGroupvm.objects.filter(groupid = existingid).delete()
+				obj.save()
+				obj.name=customer_grp
+				obj = JuiceGroupnames.objects.get(groupnameid=existingid)
+					existingid = grp.groupnameid
+				for grp in grp_obj:
+				existingid = 0
+			else:
+				return redirect('/webapp/customer_grplist?success=1')
+					JuiceGroupvm.objects.create(groupid = grpid,vm=vm_name)
+				for vm_name in selected_vms:
+				print (grpid)
+				grpid = obj.groupnameid
+				obj = JuiceGroupnames.objects.create(name=customer_grp)
+			if len(grp_obj) == 0:
+			grp_obj = JuiceGroupnames.objects.filter(name=customer_grp) if grp_id == 0 else JuiceGroupnames.objects.filter(groupnameid = grp_id)
+		try:
+		selected_vms = self.request.POST.getlist('vmlist') or []
+		customer_grp = self.request.POST.get('customer_grp')or 'Anonymous'
+		grp_id = int(self.request.POST.get('groupid') or 0)
+	def post(self,request):
+		return render(request,'webapp/customer_grp.html',{'group_name':group_name,'selected_vmlist':group_vmlist,'groupid':groupid,'vmlist':vmlist.json(),'back_url':request.META.get('HTTP_REFERER') or '/webapp'})
+					group_vmlist.append(vm['vm'])
+				for vm in groupvmobj:
+				groupvmobj = JuiceGroupvm.objects.filter(groupid=groupid)
+				group_name = elem.name
+			for elem in groupobj:
+			groupobj = JuiceGroupnames.objects.filter(groupnameid = groupid)

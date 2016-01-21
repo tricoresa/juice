@@ -1,0 +1,37 @@
+{% extends  "webapp/base.html" %}
+{% block extrahead %}
+<script type="text/javascript">
+$(document).ready(function() {
+        $(".helptext a").prop("href", "/webapp/password/{{id}}")
+})
+</script>
+{%endblock%}
+{%block content%}
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <div class="row">
+      <div>
+        <ol class="breadcrumb">
+          <li class="active">{%if id%}<a href= '/webapp/register'>Register New User </a>{%else%}Register New User{%endif%}</li>
+            <li><a href="{{back_url}}" title="back to previous page">Back</a></li>
+                {% if error%}
+                <p style="color:red;">{{error}}</p>
+                {%endif%}
+        </ol>
+      </div> <!-- div class="col..." -->
+  </div> <!-- div class="row" -->
+
+
+<div class ="col-xs-9 col-lg-10">
+{% if not error%}
+        {%if id%}<a href = "/webapp/password/{{id}}"><b>Edit password</b></a>{%endif%}
+        <form action={%if id%}"/webapp/register/{{id}}/"{%else%}"/webapp/register/"{%endif%} method = 'post'>{%csrf_token%}
+        {{form.as_ul}}
+        <!--input type  = 'submit' class="btn-btn-primary" {%if id%} value='Update' {%else%}value='Register'{%endif%}/-->
+        <button id="submit" type="submit" class="btn btn-primary" title="Submit" name="submit" value="1">{%if id%}Update {%else%}Register{%endif%}</button>
+        </form>
+{%endif%}
+</div>
+</div>
+{%endblock%}
+

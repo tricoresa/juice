@@ -1,0 +1,74 @@
+{% extends 'webapp/bootstrap.html' %}
+
+{% load bootstrap3 %}
+{% block bootstrap3_content %}
+<div class="container">
+	<div class="pull-right">{%if request.user.is_anonymous%}<a href="/webapp/login">Login</a>{%else%} Hello {{request.user}}{%endif%} | <a href="/webapp/logout">Logout</a></div>
+        <h1> <a href="/webapp">{% block title %}Django-Juice Web App{% endblock %}</a></h1>
+	<script src="{% bootstrap_jquery_url %}"></script>
+	<script type="text/javascript">
+	$(function () 
+	{
+        	var opts = $('#filter_select1 option').map(function () {
+                return [[this.value, $(this).text()]];
+                 });
+                var opts2 = $('#filter_select2 option').map(function () {
+                return [[this.value, $(this).text()]];
+                });
+            $('#filterinput1').keyup(function () {
+	        var rxp = new RegExp($('#filterinput1').val(), 'i');
+        	var optlist = $('#filter_select1').empty();
+	        opts.each(function () {
+        	    if (rxp.test(this[1])) {
+                	optlist.append($('<option/>').attr('value', this[0]).text(this[1]));
+	            }
+        	});
+
+	    });
+            $('#filterinput2').keyup(function () {
+	        var rxp = new RegExp($('#filterinput2').val(), 'i');
+        	var optlist = $('#filter_select2').empty();
+	        opts2.each(function () {
+        	    if (rxp.test(this[1])) {
+                	optlist.append($('<option/>').attr('value', this[0]).attr('selected',true).text(this[1]));
+	            }
+        	});	
+	     });
+	});
+	</script>
+	{%if not request.user.is_anonymous%}
+	<nav class="navbar navbar-default">
+	    <div class="container-fluid">
+
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		    <div class="collapse navbar-collapse" id="navbar-collapse-1">
+		      <ul class="nav navbar-nav nav-tabs">
+        		<li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Reports <span class="caret"></span></a>
+	                <ul class="dropdown-menu">
+                	        <li><a href="/webapp/vmreport">VM and Disk Report</a></li>
+				<li><a href="/webapp/repositoryreport">OVM Repository Report</a></li>
+        	                <li><a href="/webapp/customer_grplist">Customer Group List</a></li>
+				<li><a href="/webapp/userlist">User List</a></li>	
+	                </ul>
+			</li>
+
+			{%if  not active_user = 3 %}
+	        	<li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Actions<span class="caret"></span></a>
+	                <ul class="dropdown-menu">
+        	                <li><a href="/webapp/customergroup">Add Customer Group</a></li>
+				<li><a href="/webapp/register">Add User</a></li>	
+	                </ul>
+	        	</li>
+			{%endif%}
+	
+		      </ul>
+		    </div>
+	    </div>
+	</nav>
+	{%endif%}
+
+	 {% bootstrap_messages %}
+	{%block extrahead%}{%endblock%}
+        {% block content %}(no content){% endblock %}
+</div>
+{% endblock %}

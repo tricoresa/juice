@@ -1,0 +1,156 @@
+
+{% extends 'webapp/base.html' %}
+{%block extrahead%}
+<script type="text/javascript">
+$(document).ready(function() {
+    $('#0').click(function(event) {  //on click
+        if(this.checked) { // check select status
+            $('.checkbox1').each(function() { //loop through each checkbox
+                this.checked = true;  //select all checkboxes with class "checkbox1"
+            });
+        }else{
+            $('.checkbox1').each(function() { //loop through each checkbox
+                this.checked = false; //deselect all checkboxes with class "checkbox1"
+            });
+        }
+    });
+    $("#checkjob").submit(function(e){
+        var allow_form = 0;
+        $(".notification").remove()
+        for (var key in localStorage) {
+                if ( key > 0 && localStorage[key] == "USER_CHECKED"){
+                        allow_form = 1;
+                        localStorage.removeItem(key);
+                }
+                if (key == 0 && localStorage[key] == "USER_CHECKED")
+                        localStorage.removeItem(key);
+        }
+        if (allow_form == 0 ){
+                $(".breadcrumb").append("<li class='notification text-danger' >No group selected</li>");
+                 e.preventDefault();
+
+        }
+        else{
+                if (confirm('Are you sure to Delete Selected customer group(s)?') == true){
+                         $(".breadcrumb").append("<li class='notification text-primary' >Processing request.... Please wait!</li>");
+                         $("#delete_userinput").val(1)
+                }
+                else{
+                        e.preventDefault();
+                        $(".checkbox1").prop("checked", false);
+                }
+        }
+});
+     if (localStorage) {
+
+     $("input:checkbox.checkbox1").each(function() {
+                $(this).prop('checked',localStorage.getItem(this.id) == 'USER_CHECKED');
+
+        });
+        /*
+         * when a form field changes store it's value in local storage
+         */
+        $("input:checkbox.checkbox1").click(function() {
+        if ($(this).attr('id') == 0)
+        {
+                 if ($(this).is(":checked")) {
+                         $('.checkbox1').each(function(){
+                                localStorage.setItem($(this).attr('id'), "USER_CHECKED");
+                         });
+                }
+                else{
+                         $('.checkbox1').each(function(){
+                                localStorage.removeItem($(this).attr('id'), "USER_CHECKED");
+                         });
+                }
+
+        }
+        else{
+                if ($(this).is(":checked")) {
+                        localStorage.setItem($(this).attr('id'), "USER_CHECKED");
+                }
+                else {
+                        localStorage.removeItem($(this).attr('id'));
+                }
+            }
+    });
+   }
+
+});
+</script>
+{%endblock%}
+{% block content %}
+<div class="container-fluid">
+ <!-- Breadcrumb -->
+    <div class="row">
+      <div>
+        <ol class="breadcrumb">
+          <li class="active">User List</li>
+            <li><a href="{{back_url}}" title="back to previous page">Back</a></li>
+               {%if error_msg%} <li class="text-danger">{{error_msg}}</li>{%endif%}
+		<li  class="text-success">{%if success = 1%}User Updated Succesfully {%endif%}</li>
+        </ol>
+      </div> <!-- div class="col..." -->
+  </div> <!-- div class="row" -->
+<form id= 'checkjob' class="form" role="form" action="/webapp/delete/" method="post" >
+{%csrf_token%}
+<div class="pull-left">
+{% if pagination.has_previous %}
+            <a href="?page={{ pagination.previous_page_number }}" >previous</a>
+{% endif %}
+
+<b>Page {{ pagination.number }} of {{ pagination.paginator.num_pages }}.</b>
+
+{% if pagination.has_next %}
+            <a href="?page={{ pagination.next_page_number }}"   >next</a>
+{% endif %}
+</div>
+
+{%if active_user = 0 or active_user = 1%}
+<div class="pull-right" style="margin:2px;">
+<button type="submit"  class = "btn btn-sm btn-primary" name="delete_user" value = "1">Delete User(s)</button>
+</div>
+{%endif%}
+<table class="table table-bordered table-hover table-condensed">
+ <thead>
+  <tr>	{%if active_user = 0 or active_user = 1%}<th><input class ="checkbox1" type= "checkbox" id = "0"/> All</th>{%endif%}
+	<th>User Name</th>
+         <th>First Name</th>
+        <th> Last Name</th>
+	<th>Email</th>
+	<th style="word-break: inherit;">User Group (Admin/operator/Viewer)</th>
+        {%if active_user != 3%}<th>Actions </th>{%endif%}
+</tr>
+</thead>
+ {%for user in userlist%}
+        <tr>
+		{%if active_user = 0 or active_user = 1%}
+                <td>{%if "Admin" not in user.grouplist and user.superuser = 0%}<input class = "checkbox1" name="check[]" type = "checkbox" id = "{{user.id}}"  value={{user.id}}>{%endif%}</td>
+                {%endif%}
+                <td>{{user.username}}</td>
+                <td>{{user.first_name}}</td>
+                <td>{{user.last_name}}</td>
+                <td>{{user.email}}</td>
+                <td>{%for group in  user.grouplist%}{{group}}{%if user.grouplist|length > 1%},{%endif%}{%empty%}{%if user.superuser%} Superuser{%endif%}{%endfor%}</td>
+                {%if active_user != 3%}
+			<td>{%if active_user = 0 or active_user = 1 or request.user.id = user.id %}<a href="/webapp/register/{{user.id}}" >Edit</a> {%endif%}</td>
+		{%endif%}
+        </tr>
+
+   {%empty%}
+        <tr>
+		<td class="text-danger">No Registered user</td>
+		<td></td>
+		<td></td>
+		<td></td>
+		<td></td>
+		<td></td><td></td>
+
+        </tr>
+
+  {%endfor%}
+</table>
+<input type="hidden" id ="delete_userinput" name='delete_user' value=""/>
+</form>
+</div>
+{%endblock%}

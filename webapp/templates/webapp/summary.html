@@ -1,0 +1,82 @@
+{% extends 'webapp/base.html' %}
+
+{% load bootstrap3 %}
+
+{%block content%}
+
+<div class="container-fluid">
+ <!-- Breadcrumb -->
+    <div class="row">
+      <div>
+        <ol class="breadcrumb">
+          <li class="active">Summary</li>
+            <li><a href="{{back_url}}" title="back to previous page">Back</a></li>
+	    <li class="text-danger">{{error_msg}}</li>
+        </ol>
+      </div> 
+      <div class="col-xs-4">
+      </div> 
+    </div> 	
+
+   <div class="row">
+	<div class="col-sm-9">
+		<div>
+			{% if pagination.has_previous %}
+			<a href="?page={{ pagination.previous_page_number }}&group={{selected_grp}}" >previous</a>
+			{% endif %}
+
+			<b>Page {{ pagination.number }} of {{ pagination.paginator.num_pages }}.</b>
+
+			{% if pagination.has_next %}
+			<a href="?page={{ pagination.next_page_number }}&group={{selected_grp}}" >next</a>
+			{% endif %}
+		</div>
+
+		<table class="table table-bordered table-hover table-condensed">
+			<thead>
+				<tr>
+					<th>Group Name</th>
+					<!--th>Physical Disks</th-->
+				        <th>Total Physicaldisk Size </th>
+					<!--th>Virtual Disks</th-->
+				        <th>Total Virtual Disk Size</th>			
+					<th>Total Disk usage by Group</th>
+				</tr>
+			</thead>
+			{%for res in grp_list%}
+				<tr>
+			                <td><a href="/webapp/vmreport?group={{res.groupid}}">{{res.groupname}}</a></td>
+					<!--td>{{res.physical_name}}</td-->
+			                <td>{{res.physical_disk_size}}</td>
+					<!--td>{{res.virtual_name}}</td-->
+			                <td>{{res.virtual_disk_size}}</td>
+					<td>{{res.size}}</td>
+				</tr>
+			{%endfor%}
+		</table>
+	</div>
+	<div class="col-sm-3">
+		<form class="form" role="form" action="/webapp" method="get">
+	        <label>Filters</label>
+
+		<div class="form-group">
+			<span>Select Customer Group</span>
+			<input id="filterinput1" class="input-sm" placeholder="Search Customer Group" autocomplete="off">
+		        <select name="group" id = "filter_select1" class="input-sm" style="width:260px;">
+				<option value="0" {%ifequal selected_grp 0%}selected=""{%endifequal%}>All</option>
+		                {%for grp in customergrouplist%}
+                		  <option value="{{grp.groupnameid}}" {%ifequal grp.groupnameid selected_grpid%}selected=""{%endifequal%}>{{grp.name}}</option>
+		                {%endfor%}
+			 </select>
+	         </div>
+		{% buttons %}
+		        <button type="submit" class="btn btn-primary"> Apply</button>
+			<button type="reset" class="btn" onClick = "location.href='/webapp/'">Reset</button>
+	    	{% endbuttons %}
+	        </form>
+
+
+	</div>
+   </div>
+</div>
+{%endblock%}
