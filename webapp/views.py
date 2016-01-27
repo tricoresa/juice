@@ -33,40 +33,38 @@ class Summary(View):
 		page = int(self.request.GET.get('page') or 1)
 		limit =int(self.request.GET.get('limit') or 10)
 		pagination_res = pagination(groupObj,limit,page)
-		infiniserverlist = get_serverlist()
-		infini_server_list = [vm.get('value') for vm in infiniserverlist]
+		
 		try:
 			for customer in pagination_res:
 				res_dict =  {}
 				res_dict['physical_disk_size'] = 0
 				res_dict['virtual_disk_size'] = 0
+				res_dict ['size'] = 0  
 				total_grp_usage = 0
 				res_dict['groupname']  = customer.name
 				res_dict['groupid'] = customer.groupnameid
-				ovm_vmlist = list(JuiceGroupvm.objects.filter(groupid=customer.groupnameid).exclude(vm__in = infini_server_list).values_list('vm',flat=True))
-				infini_serverlist = list(JuiceGroupvm.objects.filter(groupid=customer.groupnameid,vm__in = infini_server_list).values_list('vm',flat=True) )
-				if len(ovm_vmlist) > 0:
-					res_dict['source'] = 1
-					reslist,total_grp_usage = get_ovm(ovm_vmlist)
-					for elem in reslist:
+				acronym = customer.acronym
+				vlist,hostlist = applyfilter(acronym)
+				if len(vlist) >  0:
+					ovm_res,total_grp_usage = get_ovm(vlist)
+					for elem in ovm_res:
 						if len(elem.get('virtualist')) > 0 :
 							for vm_json in elem['virtualist']:
 								res_dict['virtual_disk_size'] += vm_json['total']
 						if len(elem.get('physicalist')) > 0:
 							for vm_json in elem['physicalist']:
 								res_dict['physical_disk_size'] += vm_json['total']
-					res_dict['size'] = res_dict['physical_disk_size']+res_dict['virtual_disk_size']
-				if len(infini_serverlist) > 0:
-					res_dict['source'] = 2
-					res_list,total_grp_usage = get_infini(infini_serverlist,limit)
-					res_dict['size'] = 0
-					for res in res_list:
+					res_dict['size'] = res_dict['physical_disk_size']+res_dict['virtual_disk_size']	                
+				if len(hostlist)>0 :
+					infini_res,total_grp_usage = get_infini(hostlist,limit)
+					for res in infini_res:
 						for elem in res.get('disk_list'):
 							res_dict['size'] += elem['size']
 				grp_list.append(res_dict)
 		except Exception as e:
 			print ("Summary Module error - ",e)
 			error_msg = "Exception handled in Summary module"
+
 
 		return render(request,'webapp/summary.html',{'active_user':active_user,'error_msg':error_msg,'grp_list':grp_list,'customergrouplist':customergrouplist,'selected_grpid':selected_grpid,'pagination':pagination_res,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})
 
@@ -129,86 +127,82 @@ class CSVExport(View):
 #----Dashboard is th VM report where Vm from OVM and disks from INfinibox are listed with respective repo name, disk name ,disk size
 class Dashboard(View):
 	def get(self,request):
+		if login_required(request.user):
+			return redirect('/webapp/login?next='+request.path)
+		active_user = get_user_grp(request.user)	
+		source = int(self.request.GET.get('source') or 0)
+		server = self.request.GET.getlist('server') or []
+		custgrp = int(self.request.GET.get('group') or 0)
+		limit = 0
+		cust_grplist = JuiceGroupnames.objects.all().order_by('name')
+		ovm_serverlist = get_ovm_serverlist()
+		infini_serverlist = get_infini_serverlist()
+		serverlist= ovm_serverlist+infini_serverlist
+		newserverlist = sorted(serverlist, key=lambda k: k['name'])
+		if custgrp > 0:
+			cust_acronym = JuiceGroupnames.objects.get(groupnameid = custgrp).acronym
+		else:
+			cust_acronym = ''
+		vlist , hostlist = applyfilter(cust_acronym,server)
+		if len(vlist)>0:
+			ovmresult,ovm_usage  = get_ovm(vlist)
+		elif  cust_acronym == "" and len(server) == 0:
+			ovmresult,ovm_usage = get_ovm([])
+		else:
+			ovmresult,ovm_usage = [],0
+		if len(hostlist)>0:
+			infiniresult,infini_usage = get_infini(hostlist,limit)
+		elif cust_acronym == "" and len(server) == 0:
+			infiniresult,infini_usage = get_infini([],limit)
+		else:
+			infiniresult,infini_usage = [],0
+		result = ovmresult + infiniresult
+		total_usage = ovm_usage+infini_usage
+		return render(request,'webapp/dashboard.html',{'reslist':result,'active_user':active_user,'source':source,'server':server,'serverlist':newserverlist,'cust_grp':custgrp,'customergrouplist':cust_grplist,'total_usage':total_usage,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})	
+	def post(self,request):
 
 		if login_required(request.user):
 			return redirect('/webapp/login?next='+request.path)
 		active_user = get_user_grp(request.user)
-		source = int(self.request.GET.get('source') or 0)
-		custgrp = int(self.request.GET.get('group') or 0)
-
-
-		server = self.request.GET.getlist('server') or []
-		limit = 0#int(self.request.GET.get('limit') or 0)
+		source = int(self.request.POST.get('source') or 0)
+		custgrp = int(self.request.POST.get('group') or 0)
+		server = self.request.POST.getlist('server') or []
+		limit = 0#int(self.request.POST.get('limit') or 0)
 		cust_grplist = JuiceGroupnames.objects.all().order_by('name')
-		ovm_serverlist = []
-		infini_serverlist = get_serverlist()
-		for vm in vmdata:
-			ovm_serverlist.append(vm['id'])
-		#ovm_vmlist =[ovm['value'] for ovm in ovm_serverlist]
-		#infini_vmlist = [infini['value'] for infini in infini_serverlist]
+		if custgrp > 0:
+			cust_acronym = JuiceGroupnames.objects.get(groupnameid = custgrp).acronym 
+		else:
+			cust_acronym = ''
+		ovm_serverlist = get_ovm_serverlist()
+		infini_serverlist = get_infini_serverlist()
 		serverlist= ovm_serverlist+infini_serverlist
 		newserverlist = sorted(serverlist, key=lambda k: k['name'])
-		if source == 0:
+
+		vlist , hostlist = applyfilter(cust_acronym,server)
+		if len(vlist)>0:
+			ovmresult,ovm_usage  = get_ovm(vlist)
+		elif  cust_acronym == "" and len(server) == 0:
 			ovmresult,ovm_usage = get_ovm([])
+		else:
+			ovmresult,ovm_usage = [],0
+		if len(hostlist)>0:
+			infiniresult,infini_usage = get_infini(hostlist,limit)
+		elif cust_acronym == "" and len(server) == 0:
 			infiniresult,infini_usage = get_infini([],limit)
+		else:
+			infiniresult,infini_usage = [],0
+		if source == 0:
 			result= ovmresult+infiniresult
 			total_usage = ovm_usage+infini_usage
+		if source ==1:
+			result = ovmresult
+			total_usage = ovm_usage
+		if source ==2:
+			result  = infiniresult
+			total_usage = infini_usage
 		return render(request,'webapp/dashboard.html',{'reslist':result,'active_user':active_user,'limit':limit,'source':source,'server':server,'serverlist':newserverlist,'cust_grp':custgrp,'customergrouplist':cust_grplist,'total_usage':total_usage,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})
 
 	
-	def post(self,request):
-		if login_required(request.user):
-			return redirect('/webapp/login?next='+request.path)
-		active_user = get_user_grp(request.user)
-		source = int(self.request.POST.get('source') or 0)	
-		custgrp = int(self.request.POST.get('group') or 0)
-		server = self.request.POST.getlist('server') or ''	
-		limit = 0#int(self.request.POST.get('limit') or 0)
-		cust_grplist = JuiceGroupnames.objects.all().order_by('name')
-		ovm_serverlist = []
-		infini_serverlist = get_serverlist()
-		infini_selected_server = []
-		ovm_selected_vm  = []
-		for vm in vmdata:
-			ovm_serverlist.append(vm['id'])
-			if len(server) != 0 and vm['id']['value'] in server:
-				ovm_selected_vm.append(vm['id']['value'])	
-		"""for s in serverdata:
-			ovm_serverlist.append(s['id'])
-			if len(server) != 0 and  s['id']['value'] in server:
-				for vmid in s['vmIds']:
-					ovm_selected_vm.append(vmid['value'])"""
-		for inf_server in infini_serverlist:
-			if len(server) != 0 and inf_server['value'] in server:
-				infini_selected_server.append(inf_server['value'])
-		serverlist= ovm_serverlist+infini_serverlist
-		newserverlist = sorted(serverlist, key=lambda k: k['name']) 
-		if source  == 1:
-			ovm_selected_vmlist = set(JuiceGroupvm().apply_filter(groupid = custgrp,vmlist = ovm_selected_vm).values_list('vm',flat=True))
-			if len(ovm_selected_vmlist) > 0:
-				result,total_usage = get_ovm(ovm_selected_vmlist)
-			else:
-				result,total_usage  = get_ovm(ovm_selected_vm)
-		if source == 2:
-			infini_selected_vmlist = set(JuiceGroupvm().apply_filter(groupid = custgrp,serverlist = infini_selected_server).values_list('vm',flat=True))	
-			if len(infini_selected_vmlist) >0:
-				result,total_usage = get_infini(infini_selected_vmlist,limit)
-			else:
-				result,total_usage = get_infini(infini_selected_server,limit)	
-		if source == 0:
-			ovmresult = []
-			infiniresult = []
-			infini_usage = 0
-			ovm_usage = 0
-			if custgrp >0 or len( ovm_selected_vm) >0 :
-				ovm_selected_vmlist = set(JuiceGroupvm().apply_filter(groupid = custgrp,vmlist = ovm_selected_vm).values_list('vm',flat=True))
-				ovmresult,ovm_usage = get_ovm(ovm_selected_vmlist)
-			if custgrp > 0 or len(infini_selected_server) >0 :
-				infiniresult,infini_usage = get_infini(infini_selected_server,limit)
-			result= ovmresult+infiniresult
-			total_usage = ovm_usage+infini_usage
-		
-		return render(request,'webapp/dashboard.html',{'reslist':result,'active_user':active_user,'limit':limit,'source':source,'server':server,'serverlist':newserverlist,'cust_grp':custgrp,'customergrouplist':cust_grplist,'total_usage':total_usage,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})
 	
 # -----  Repository Report to list out the OVM repositories with their total size, used size and free space ---#
 class Repository(View):
@@ -262,16 +256,17 @@ class CustomerGroupList(View):
 				res_dict =  {}
 				res_dict['customergrp_id'] = customer.groupnameid
 				res_dict['customername']  = customer.name
-				res_dict['vmlist'] = []
-				vmgroupobj = JuiceGroupvm.objects.filter(groupid = customer.groupnameid)
+				ovm_vmlist, infini_serverlist = get_servernames(customer.acronym)
+				res_dict['vmlist'] = ovm_vmlist+infini_serverlist
+				"""vmgroupobj = JuiceGroupvm.objects.filter(groupid = customer.groupnameid)
 				for vm in vmgroupobj:
 					if not vm.vm.isdigit():
 						for v in vmdata:
 							if vm.vm == v['id']['value']:
 								res_dict['vmlist'].append(v['id']['name'])
 					else:
-						infini_server = get_serverlist()
-						res_dict['vmlist'].append(infini_server[0]['name'])
+						infini_server = get_infini_serverlist()
+						res_dict['vmlist'].append(infini_server[0]['name'])"""
 				reslist.append(res_dict)
 		except Exception as e:
 			print ("Customer Grouplist error - ",e)
@@ -291,8 +286,10 @@ class CustomerGroupList(View):
 			res_dict =  {}
 			res_dict['customergrp_id'] = customer.groupnameid
 			res_dict['customername']  = customer.name
-			res_dict['vmlist'] = []
-			vmgroupobj = JuiceGroupvm.objects.filter(groupid = customer.groupnameid)
+			ovm_vmlist, infini_serverlist = get_servernames(customer.acronym)
+
+			res_dict['vmlist'] = ovm_vmlist+infini_serverlist
+			"""vmgroupobj = JuiceGroupvm.objects.filter(groupid = customer.groupnameid)
 			for vm in vmgroupobj:
 				if not vm.vm.isdigit():
 					for v in vmdata:
@@ -300,8 +297,8 @@ class CustomerGroupList(View):
 							res_dict['vmlist'].append(v['id']['name'])
 
 				else:
-					infini_server = get_serverlist()
-					res_dict['vmlist'].append(infini_server[0]['name'])
+					infini_server = get_infini_serverlist()
+					res_dict['vmlist'].append(infini_server[0]['name'])"""
 			reslist.append(res_dict)
 		return render(request,'webapp/customer_grplist.html',{'active_user':active_user,'reslist':reslist,'pagination':pagination_res,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})
 
@@ -314,7 +311,9 @@ class CustomerGroup(View):
 		active_user = get_user_grp(request.user)
 		groupid = int(self.request.GET.get('groupid') or 0)
 		group_name = ''
-		group_vmlist = self.request.GET.get('vmlist') or []
+		group_acronym = ''
+		group_vmlist =self.request.GET.get('vmlist')  or ''
+		group_vmlist = group_vmlist.split(",")
 		vmlist = []
 		error_msg = ''
 		try:
@@ -322,19 +321,20 @@ class CustomerGroup(View):
 			infini_vmlist = []
 			for vm in vmdata:
 				ovm_vmlist.append(vm['id'])
-			infini_vmlist = get_serverlist()
+			infini_vmlist = get_infini_serverlist()
 			vmlist = ovm_vmlist+infini_vmlist
 			if groupid:
 				groupobj = JuiceGroupnames.objects.filter(groupnameid = groupid)
 				for elem in groupobj:
 					group_name = elem.name
+					group_acronym = elem.acronym
 					groupvmobj = JuiceGroupvm.objects.filter(groupid=groupid)
 					for vm in groupvmobj:
 						group_vmlist.append(vm.vm)
 		except Exception as e:
 			print ("Customer Group Creation form error - ", e)
 			error_msg = "Exception handled in Customer group creation form"
-		return render(request,'webapp/customer_grp.html',{'active_user':active_user,'error_msg':error_msg,'group_name':group_name,'selected_vmlist':group_vmlist,'groupid':groupid,'vmlist':vmlist,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})
+		return render(request,'webapp/customer_grp.html',{'active_user':active_user,'error_msg':error_msg,'group_acronym':group_acronym,'group_name':group_name,'selected_vmlist':group_vmlist,'groupid':groupid,'vmlist':vmlist,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})
 
 	def post(self,request):
 		if login_required(request.user):
@@ -343,10 +343,11 @@ class CustomerGroup(View):
 		grp_id = int(self.request.POST.get('groupid') or 0)
 		customer_grp = self.request.POST.get('customer_grp')or 'Anonymous'
 		selected_vms = self.request.POST.getlist('vmlist') or []
+		acronym = self.request.POST.get('acronym') or customer_grp[:4]
 		try:
 			grp_obj = JuiceGroupnames.objects.filter(name=customer_grp) if grp_id == 0 else JuiceGroupnames.objects.filter(groupnameid = grp_id)
 			if len(grp_obj) == 0:
-				obj = JuiceGroupnames.objects.create(name=customer_grp)
+				obj = JuiceGroupnames.objects.create(name=customer_grp,acronym = acronym)
 				grpid = obj.groupnameid
 				for vm_name in selected_vms:
 					JuiceGroupvm.objects.create(groupid = grpid,vm=vm_name)
@@ -357,6 +358,7 @@ class CustomerGroup(View):
 					existingid = grp.groupnameid
 				obj = JuiceGroupnames.objects.get(groupnameid=existingid)
 				obj.name=customer_grp
+				obj.acronym = acronym
 				obj.save()
 				obj2 = JuiceGroupvm.objects.filter(groupid = existingid).delete()
 				for vm_name in selected_vms:

@@ -4,7 +4,7 @@ from django.db import models
 class JuiceGroupnames(models.Model):
 	groupnameid = models.AutoField(primary_key=True)
 	name = models.TextField()
-
+	acronym = models.TextField()
 	class Meta:
 		managed = False
 		db_table = 'juice_groupnames'

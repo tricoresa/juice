@@ -3,7 +3,7 @@ import requests
 from webapp.utility import *
 
 # ------Infinibox Server List ---- #
-def get_serverlist():
+def get_infini_serverlist():
 	serverlist = []
 	for host  in infini_host_data['result']:
 		server_dict = {}
@@ -15,14 +15,11 @@ def get_serverlist():
 	return serverlist
 
 #---- Given the HOST and Volume list object, it calculates the disk names, disk ids and size of disk for each host  ----# 
-def get_infini(serverlist,limit=1000):
+def get_infini(hostlist,limit=1000):
         volume_list_json = infini_volume_data
         reslist = []
-        hostlist = []
         infini_total_usage = 0
-        if  len(serverlist) > 0:
-                hostlist = [item for item in infini_host_data['result'] if str(item['id']) in serverlist]
-        else:
+        if  len(hostlist) == 0:
                 hostlist = infini_host_data['result']
         for host in hostlist:
                 res_dict = {}

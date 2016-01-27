@@ -30,6 +30,26 @@ $(function ()
         	});
 		$("#savegrp").attr("href", "/webapp/customergroup?vmlist="+res)
         });
+	//setup before functions
+	var typingTimer;                //timer identifier
+	var doneTypingInterval = 2000;  //time in ms, 5 second for example
+	var $input = $('#filterinput2');
+
+	//on keyup, start the countdown
+	$input.on('keyup', function () {
+	  clearTimeout(typingTimer);
+	  typingTimer = setTimeout(doneTyping, doneTypingInterval);
+	});
+
+	//on keydown, clear the countdown 
+	$input.on('keydown', function () {
+	  clearTimeout(typingTimer);
+	});
+
+	//user is "finished typing," do something
+	function doneTyping () {
+	   $("#vmreport_filter").submit()
+	}
 
 });
 </script>
@@ -85,12 +105,12 @@ $(function ()
    </div>
    <div class="col-sm-3">
 	 <form id = "vmreport_filter" class="form" role="form" action="/webapp/vmreport/" method="POST">
-	  {% csrf_token %}
+	{% csrf_token %}
          <label>Filters</label>
 	
 	<div class="form-group">
            <span>Select Source</span>
-           <select name="source" id = 'sourceid' class="input-sm" style="width:260px;">
+           <select name="source" id = 'sourceid' onchange="this.form.submit()" class="input-sm" style="width:260px;">
 		<option value="0" {%ifequal source 0%}selected=""{%endifequal%}>All</option>
                 <option value="1" {%ifequal source 1%}selected=""{%endifequal%}>OVM</option>
 		<option value="2" {%ifequal source 2%}selected=""{%endifequal%}>Infinibox</option>
@@ -102,8 +122,8 @@ $(function ()
 	<div class="form-group">
            <span>Select Customer Group</span>
 
-	   <input id="filterinput1" name="grp_filter" class="input-sm" placeholder="Search Customer Group" list="filter_select1">
-           <select name="group" id = "filter_select1"  class="input-sm" style="width:260px;">
+	   <!--input id="filterinput1" name="grp_filter" class="input-sm" placeholder="Search Customer Group" autocmplete="off"-->
+           <select name="group" id = "filter_select1" onchange="this.form.submit()" class="input-sm" style="width:260px;">
                 <option value="0" {%ifequal cust_grp 0%}selected=""{%endifequal%}>All</option>
                 {%for grp in customergrouplist%}
                   <option label={{grp.name}} value={{grp.groupnameid}} {%ifequal grp.groupnameid cust_grp%}selected=""{%endifequal%}>{{grp.name}}</option>
@@ -115,7 +135,7 @@ $(function ()
            <span>Select Server</span>
 	   <input type="text"  id = "filterinput2" class="input-sm" placeholder="Search Server/VM" autocomplete="off"> 
 		<a href= "" target="_blank" id = "savegrp" >Save group</a>
-           <select multiple="multiple" id = 'filter_select2'  name="server"  class="input-sm" style="width:260px;">
+           <select multiple="multiple" id = 'filter_select2'  name="server"  class="input-sm" style="width:260px;height:200px;">
                 <option value=0 {%if '' in server %}selected=""{%endif%}>All</option>
                 {%for s in serverlist%}
                   <option value={{s.value}} {%if s.value in server%}selected=""{%endif%}>{{s.name}}</option>
@@ -131,11 +151,11 @@ $(function ()
 		<option value="50" {%ifequal limit 50 %}selected=""{%endifequal%}>50</option>
 		<option value="100" {%ifequal limit 100 %}selected=""{%endifequal%}>100</option>
            </select>
-         </div-->
+         </div>
 	{% buttons %}
 		<button type="submit" class="btn btn-primary"> Apply</button>
                 <button type="reset" class="btn" onClick = "location.href='/webapp/vmreport'">Reset</button>
-        {% endbuttons %}
+        {% endbuttons %}-->
 	</form>
    </div>
   </div>

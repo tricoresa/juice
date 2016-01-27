@@ -81,6 +81,34 @@ def pagination(obj,limit,page=1):
                 pagination_res = paginator.page(paginator.num_pages)
         return pagination_res
 
+def applyfilter(cust_grp='',server = []):
+	vlist  = []
+	hostlist = []
+	for vm in vmdata:
+		if cust_grp != '' and  cust_grp.lower() in vm['id']['name'].lower():
+			vlist.append(vm)
+		if len(server) != 0 and vm['id']['value'] in server:
+		        vlist.append(vm)
+	for host in infini_host_data['result']:
+		if cust_grp != '' and cust_grp.lower() in host['name'].lower():
+			hostlist.append(host)
+	
+		if len(server) != 0 and str(host['id']) in server:
+			hostlist.append(host)
+	
+	return  vlist,hostlist
+
+def get_servernames(cust_grp = ""):
+	ovm_vmlist = []
+	infini_serverlist = []
+	for vm in vmdata:
+		if cust_grp != '' and  cust_grp.lower() in vm['id']['name'].lower():
+			ovm_vmlist.append(vm['id']['name'])
+	for server in infini_serverlist:		
+		if cust_grp != '' and cust_grp.lower() in server['name'].lower():
+			infini_serverlist.append(server['name'])
+	return ovm_vmlist,infini_serverlist
+
 # --- Details of OVM repositories ----#
 def get_repo_detail(repoid):
 	repoFileIds = session.get(baseUri+'/Repository/'+str(repoid)+'/FileSystem')
@@ -94,13 +122,17 @@ def get_repo_detail(repoid):
 	res_dict['usedsize'] = bytesto(usedsize,'g')
 	return res_dict
 
-def get_ovm(vmlist):
+def get_ovm_serverlist():
+	ovm_serverlist = []
+	for vm in vmdata:
+		ovm_serverlist.append(vm['id'])
+	return ovm_serverlist
+
+def get_ovm(vlist):
         reslist = []
         total_usage= 0
-        if len(vmlist) == 0:
+        if len(vlist) == 0:
                 vlist = [vm  for  vm in vmdata]
-        else :
-                vlist = [vm for vm in vmdata if vm['id']['value'] in vmlist]
         for v in vlist:
                         res_dict = {}
                         total_size = 0

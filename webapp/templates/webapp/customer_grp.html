@@ -25,7 +25,7 @@
 
 	function select_vm() {
 		$('select#filter_select option').removeAttr("selected");
-		var x = $("#customer_grp").val();
+		var x = $("#acronym").val();
 		$('#filter_select option[name*="'+x+'"]').prop('selected',true);
 		moveItems('#filter_select','#filter_select3')
 	};
@@ -57,8 +57,14 @@
 {% csrf_token %}
 <div class="form-group">
         <span>Customer Group Name :</span>
-        <input type='text' name='customer_grp'  placeholder="Group Name "value='{{group_name}}' style="margin-left:27px;" id= 'customer_grp' onblur=select_vm() required/> <span class="text-danger">*Free text filter</span>
+        <input type='text' name='customer_grp'  placeholder="Group Name "value='{{group_name}}' style="margin-left:27px;" id= 'customer_grp' required/> 
 </div>
+
+<div class="form-group">
+        <span>Group Acronym :</span>
+        <input type='text' name='acronym'  placeholder="Group Acronym" value='{{group_acronym}}' style="margin-left:27px;" id= 'acronym' onblur=select_vm() /><span class="text-danger">*Free text filter</span>
+</div>
+
 <div class="form-group" id ='vm'>
         <span>Select VM/Servers to group : </span>
 	<select multiple id ="filter_select" style="vertical-align:middle;height:500px;">
