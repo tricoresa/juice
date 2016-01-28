@@ -119,7 +119,7 @@ $(document).ready(function() {
         <th> Last Name</th>
 	<th>Email</th>
 	<th style="word-break: inherit;">User Group (Admin/operator/Viewer)</th>
-        {%if active_user != 3%}<th>Actions </th>{%endif%}
+        <th>Actions </th>
 </tr>
 </thead>
  {%for user in userlist%}
@@ -132,9 +132,7 @@ $(document).ready(function() {
                 <td>{{user.last_name}}</td>
                 <td>{{user.email}}</td>
                 <td>{%for group in  user.grouplist%}{{group}}{%if user.grouplist|length > 1%},{%endif%}{%empty%}{%if user.superuser%} Superuser{%endif%}{%endfor%}</td>
-                {%if active_user != 3%}
-			<td>{%if active_user = 0 or active_user = 1 or request.user.id = user.id %}<a href="/webapp/register/{{user.id}}" >Edit</a> {%endif%}</td>
-		{%endif%}
+		<td>{%if active_user = 0 or active_user = 1 or request.user.id = user.id %}<a href="/webapp/register/{{user.id}}" >Edit</a> {%endif%}</td>
         </tr>
 
    {%empty%}
