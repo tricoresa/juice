@@ -99,8 +99,10 @@ $(function ()
              <td>{{elem.name}}</td>
              <td>{{elem.size}}</td>
            </tr>
-          {%endfor%}
+        {%endfor%}
        </table>
+     {%empty%}
+         <p>Plesae select the required filter to view the VM/Disk report</p>
      {%endfor%}
    </div>
    <div class="col-sm-3">
@@ -114,8 +116,8 @@ $(function ()
 		<option value="0" {%ifequal source 0%}selected=""{%endifequal%}>All</option>
                 <option value="1" {%ifequal source 1%}selected=""{%endifequal%}>OVM</option>
 		<option value="2" {%ifequal source 2%}selected=""{%endifequal%}>Infinibox</option>
-		<option value="3" {%ifequal source 3%}selected=""{%endifequal%}>VMware</option>
-		<option value="4" {%ifequal source 4%}selected=""{%endifequal%}>3Par</option>
+		<option value="3" {%ifequal source 3%}selected=""{%endifequal%}>3Par</option>
+		<option value="4" {%ifequal source 4%}selected=""{%endifequal%}>VMware</option>
            </select>
          </div>
 	

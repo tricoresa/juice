@@ -2,7 +2,7 @@ import requests,json
 from pprint  import pprint
 from celery import Celery,task
 
-requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = 'RC4-SHA'
+requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = 'ALL'#'RC4-SHA'
 session=requests.Session()
 session.verify= False #disables SSL certificate verification
 session.auth=('juice','tcs_juice')
@@ -17,7 +17,7 @@ PAGE_SIZE =1000
 vol_baseUri = 'https://10.62.100.156//api/rest/volumes'
 host_baseUri='https://10.62.100.156//api/rest/hosts'
 
-"""
+
 celery = Celery('create_json', broker='amqp://guest@localhost//')
 @task()
 def create_json():
@@ -64,9 +64,20 @@ def create_json():
 	    json.dump(host_list_json, outfile)
 	
 
-"""
-with open('JSON/vmdiskmapping.json') as data_file:
-	data = json.load(data_file)
-for d in data:
-	pprint (d)
+
+	#Saving the 3par JSOn data
+	from hp3parclient import client, exceptions
+	username='juice'
+	password='tcs_juice'
+	host='10.66.100.6'
+
+	cl = client.HP3ParClient("https://%s:8080/api/v1" % host)
+	cl.login(username, password)
+
+	volumes = cl.getVolumes()
+	hosts = cl.getHosts()
+	with open('webapp/JSON/3par_vol.json', 'w') as outfile:
+		json.dump(volumes, outfile)
+	with open('webapp/JSON/3par_host.json', 'w') as outfile:
+		json.dump(hosts, outfile)
 

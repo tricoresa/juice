@@ -6,6 +6,7 @@ import json,csv
 from django.utils.encoding import smart_str
 from webapp.utility import *
 from webapp.infinibox import *
+from webapp.par3 import *
 from django.views.generic.base import View
 from django.shortcuts import render,get_object_or_404,redirect
 
@@ -137,13 +138,14 @@ class Dashboard(View):
 		cust_grplist = JuiceGroupnames.objects.all().order_by('name')
 		ovm_serverlist = get_ovm_serverlist()
 		infini_serverlist = get_infini_serverlist()
-		serverlist= ovm_serverlist+infini_serverlist
+		par3_serverlist = get_3par_serverlist()
+		serverlist= ovm_serverlist+infini_serverlist +par3_serverlist
 		newserverlist = sorted(serverlist, key=lambda k: k['name'])
-		if custgrp > 0:
+		cust_acronym = ''
+		"""if custgrp > 0:
 			cust_acronym = JuiceGroupnames.objects.get(groupnameid = custgrp).acronym
-		else:
-			cust_acronym = ''
 		vlist , hostlist = applyfilter(cust_acronym,server)
+		#par3_result,par3_usage = get_3par()
 		if len(vlist)>0:
 			ovmresult,ovm_usage  = get_ovm(vlist)
 		elif  cust_acronym == "" and len(server) == 0:
@@ -156,8 +158,10 @@ class Dashboard(View):
 			infiniresult,infini_usage = get_infini([],limit)
 		else:
 			infiniresult,infini_usage = [],0
-		result = ovmresult + infiniresult
-		total_usage = ovm_usage+infini_usage
+		result = ovmresult + infiniresult # + par3_result
+		total_usage = ovm_usage+infini_usage # + par3_usage"""
+		result = []
+		total_usage  = 0
 		return render(request,'webapp/dashboard.html',{'reslist':result,'active_user':active_user,'source':source,'server':server,'serverlist':newserverlist,'cust_grp':custgrp,'customergrouplist':cust_grplist,'total_usage':total_usage,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})	
 	def post(self,request):
 
@@ -175,31 +179,45 @@ class Dashboard(View):
 			cust_acronym = ''
 		ovm_serverlist = get_ovm_serverlist()
 		infini_serverlist = get_infini_serverlist()
-		serverlist= ovm_serverlist+infini_serverlist
+		par3_serverlist = get_3par_serverlist()
+		serverlist= ovm_serverlist+infini_serverlist+par3_serverlist
 		newserverlist = sorted(serverlist, key=lambda k: k['name'])
-
-		vlist , hostlist = applyfilter(cust_acronym,server)
-		if len(vlist)>0:
-			ovmresult,ovm_usage  = get_ovm(vlist)
-		elif  cust_acronym == "" and len(server) == 0:
-			ovmresult,ovm_usage = get_ovm([])
-		else:
-			ovmresult,ovm_usage = [],0
-		if len(hostlist)>0:
-			infiniresult,infini_usage = get_infini(hostlist,limit)
-		elif cust_acronym == "" and len(server) == 0:
-			infiniresult,infini_usage = get_infini([],limit)
-		else:
-			infiniresult,infini_usage = [],0
+	
 		if source == 0:
 			result= ovmresult+infiniresult
 			total_usage = ovm_usage+infini_usage
 		if source ==1:
+			vlist  = applyfilter(cust_acronym,server,source=1)
+			if len(vlist)>0:
+				ovmresult,ovm_usage  = get_ovm(vlist)
+			elif  cust_acronym == "" and len(server) == 0:
+				ovmresult,ovm_usage = get_ovm([])
+			else:
+				ovmresult,ovm_usage = [],0
 			result = ovmresult
 			total_usage = ovm_usage
 		if source ==2:
+			hostlist  = applyfilter(cust_acronym,server,source=2)
+			if len(hostlist)>0:
+				infiniresult,infini_usage = get_infini(hostlist,limit)
+			elif cust_acronym == "" and len(server) == 0:
+				infiniresult,infini_usage = get_infini([],limit)
+			else:
+				infiniresult,infini_usage = [],0
+
 			result  = infiniresult
 			total_usage = infini_usage
+		if source == 3:
+			par3_hostlist  = applyfilter(cust_acronym,server,source=3)
+			if len(par3_hostlist)>0:
+				par3_result,par3_usage = get_3par(par3_hostlist)
+			elif cust_acronym == "" and len(server) == 0:
+				par3_result,par3_usage = get_3par([])
+			else:
+				par3_result,par3_usage = [],0
+
+			result = par3_result
+			total_usage = par3_usage	
 		return render(request,'webapp/dashboard.html',{'reslist':result,'active_user':active_user,'limit':limit,'source':source,'server':server,'serverlist':newserverlist,'cust_grp':custgrp,'customergrouplist':cust_grplist,'total_usage':total_usage,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})
 
 	
@@ -256,8 +274,8 @@ class CustomerGroupList(View):
 				res_dict =  {}
 				res_dict['customergrp_id'] = customer.groupnameid
 				res_dict['customername']  = customer.name
-				ovm_vmlist, infini_serverlist = get_servernames(customer.acronym)
-				res_dict['vmlist'] = ovm_vmlist+infini_serverlist
+				ovm_vmlist, infini_serverlist,par3_serverlist = get_servernames(customer.acronym)
+				res_dict['vmlist'] = ovm_vmlist+infini_serverlist+par3_serverlist
 				"""vmgroupobj = JuiceGroupvm.objects.filter(groupid = customer.groupnameid)
 				for vm in vmgroupobj:
 					if not vm.vm.isdigit():
@@ -286,9 +304,9 @@ class CustomerGroupList(View):
 			res_dict =  {}
 			res_dict['customergrp_id'] = customer.groupnameid
 			res_dict['customername']  = customer.name
-			ovm_vmlist, infini_serverlist = get_servernames(customer.acronym)
+			ovm_vmlist, infini_serverlist ,par3_serverlist= get_servernames(customer.acronym)
 
-			res_dict['vmlist'] = ovm_vmlist+infini_serverlist
+			res_dict['vmlist'] = ovm_vmlist+infini_serverlist+par3_serverlist
 			"""vmgroupobj = JuiceGroupvm.objects.filter(groupid = customer.groupnameid)
 			for vm in vmgroupobj:
 				if not vm.vm.isdigit():
@@ -322,7 +340,8 @@ class CustomerGroup(View):
 			for vm in vmdata:
 				ovm_vmlist.append(vm['id'])
 			infini_vmlist = get_infini_serverlist()
-			vmlist = ovm_vmlist+infini_vmlist
+			par3_serverlist = get_3par_serverlist()
+			vmlist = ovm_vmlist+infini_vmlist+par3_serverlist
 			if groupid:
 				groupobj = JuiceGroupnames.objects.filter(groupnameid = groupid)
 				for elem in groupobj:

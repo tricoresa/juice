@@ -3,7 +3,7 @@
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import sys,certifi
 import requests,json
-requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = 'RC4-SHA'
+requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = 'ALL'#'RC4-SHA'
 
 Grp = {
 'Superuser':0,
@@ -35,6 +35,10 @@ with open('webapp/JSON/infini_vol.json') as data_file:
         infini_volume_data = json.load(data_file)
 with open('webapp/JSON/vmdiskmapping.json') as data_file:
 	vmdiskmapping_data = json.load(data_file)
+with open('webapp/JSON/3par_host.json') as data_file:
+        par3Host_data = json.load(data_file)
+with open('webapp/JSON/3par_vol.json') as data_file:
+        par3Volume_data = json.load(data_file)
 
 def bytesto(bytes, to, bsize=1024):
         unit = {'k' : 1, 'm': 2, 'g' : 3, 't' : 4, 'p' : 5, 'e' : 6 }
@@ -81,33 +85,44 @@ def pagination(obj,limit,page=1):
                 pagination_res = paginator.page(paginator.num_pages)
         return pagination_res
 
-def applyfilter(cust_grp='',server = []):
-	vlist  = []
+def applyfilter(cust_grp='',server = [],source = 1):
 	hostlist = []
-	for vm in vmdata:
-		if cust_grp != '' and  cust_grp.lower() in vm['id']['name'].lower():
-			vlist.append(vm)
-		if len(server) != 0 and vm['id']['value'] in server:
-		        vlist.append(vm)
-	for host in infini_host_data['result']:
-		if cust_grp != '' and cust_grp.lower() in host['name'].lower():
-			hostlist.append(host)
+	if source ==1:
+		for vm in vmdata:
+			if cust_grp != '' and  cust_grp.lower() in vm['id']['name'].lower():
+				hostlist.append(vm)
+			if len(server) != 0 and vm['id']['value'] in server:
+			        hostlist.append(vm)
+	if source ==2:
+		for host in infini_host_data['result']:
+			if cust_grp != '' and cust_grp.lower() in host['name'].lower():
+				hostlist.append(host)
 	
-		if len(server) != 0 and str(host['id']) in server:
-			hostlist.append(host)
+			if len(server) != 0 and str(host['id']) in server:
+				hostlist.append(host)
+	if source ==3:
+		for par3_host in par3Host_data['members']:
+			if cust_grp != '' and cust_grp.lower() in par3_host['name'].lower():
+				hostlist.append(par3_host)
+			if len(server) != 0 and str(par3_host['id']) in server:
+				hostlist.append(par3_host)
 	
-	return  vlist,hostlist
+	return  hostlist
 
 def get_servernames(cust_grp = ""):
 	ovm_vmlist = []
 	infini_serverlist = []
+	par3_serverlist = []
 	for vm in vmdata:
 		if cust_grp != '' and  cust_grp.lower() in vm['id']['name'].lower():
 			ovm_vmlist.append(vm['id']['name'])
 	for server in infini_serverlist:		
 		if cust_grp != '' and cust_grp.lower() in server['name'].lower():
 			infini_serverlist.append(server['name'])
-	return ovm_vmlist,infini_serverlist
+	for host in par3Host_data['members']:
+		if cust_grp != '' and cust_grp.lower() in host['name'].lower():
+			par3_serverlist.append(host['name'])
+	return ovm_vmlist,infini_serverlist,par3_serverlist
 
 # --- Details of OVM repositories ----#
 def get_repo_detail(repoid):
