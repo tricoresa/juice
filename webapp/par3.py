@@ -1,14 +1,5 @@
 import pprint,json
-from hp3parclient import client, exceptions
-from webapp.utility import bytesto,par3Host_data,par3Volume_data
-username='juice'
-password='tcs_juice'
-host='10.66.100.6'
-try:
-	cl = client.HP3ParClient("https://%s:8080/api/v1" % host)
-	cl.login(username, password)
-except Exception as e:
-	print (e)
+from webapp.utility import bytesto,par3Host_data,par3Volume_data,par3Vlun_data
 def get_3par(hostlist):
 	reslist = []
 	total_usage = 0
@@ -21,9 +12,12 @@ def get_3par(hostlist):
 		res_dict['servername']  = server['name']
 		res_dict['total_size'] = 0
 		res_dict['disk_list'] = []
+		vlunlist = []
 		try:
-			vluns = cl.getHostVLUNs(server['name'])
-			for vl in vluns:
+			for vlun in par3Vlun_data:
+				if vlun['hostname'] == server['name']:
+					vlunlist.append(vlun)
+			for vl in vlunlist:
 				for vol in par3Volume_data['members']:
 					if vl['volumeName'] == vol['name']:
 						vol_dict = {}
@@ -37,7 +31,6 @@ def get_3par(hostlist):
 			reslist.append(res_dict)
 		except:
 			pass
-	cl.logout()
 	return reslist, total_usage
 
 def get_3par_serverlist():

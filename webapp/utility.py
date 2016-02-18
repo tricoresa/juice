@@ -39,6 +39,8 @@ with open('webapp/JSON/3par_host.json') as data_file:
         par3Host_data = json.load(data_file)
 with open('webapp/JSON/3par_vol.json') as data_file:
         par3Volume_data = json.load(data_file)
+with open('webapp/JSON/3par_vlun.json') as data_file:
+        par3Vlun_data = json.load(data_file)
 
 def bytesto(bytes, to, bsize=1024):
         unit = {'k' : 1, 'm': 2, 'g' : 3, 't' : 4, 'p' : 5, 'e' : 6 }
@@ -116,7 +118,7 @@ def get_servernames(cust_grp = ""):
 	for vm in vmdata:
 		if cust_grp != '' and  cust_grp.lower() in vm['id']['name'].lower():
 			ovm_vmlist.append(vm['id']['name'])
-	for server in infini_serverlist:		
+	for server in infini_host_data['result']:		
 		if cust_grp != '' and cust_grp.lower() in server['name'].lower():
 			infini_serverlist.append(server['name'])
 	for host in par3Host_data['members']:

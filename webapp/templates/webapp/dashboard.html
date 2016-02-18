@@ -102,7 +102,7 @@ $(function ()
         {%endfor%}
        </table>
      {%empty%}
-         <p>Plesae select the required filter to view the VM/Disk report</p>
+         <p class="text-danger">PLEASE SELECT THE SOURCE DEPENDENT FILTERS TO VIEW THE VM/DISK REPORT FOR OVM/INFINIBOX/3PAR</p>
      {%endfor%}
    </div>
    <div class="col-sm-3">
@@ -113,7 +113,7 @@ $(function ()
 	<div class="form-group">
            <span>Select Source</span>
            <select name="source" id = 'sourceid' onchange="this.form.submit()" class="input-sm" style="width:260px;">
-		<option value="0" {%ifequal source 0%}selected=""{%endifequal%}>All</option>
+		<!--option value="0" {%ifequal source 0%}selected=""{%endifequal%}>All</option-->
                 <option value="1" {%ifequal source 1%}selected=""{%endifequal%}>OVM</option>
 		<option value="2" {%ifequal source 2%}selected=""{%endifequal%}>Infinibox</option>
 		<option value="3" {%ifequal source 3%}selected=""{%endifequal%}>3Par</option>

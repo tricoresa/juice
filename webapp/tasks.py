@@ -80,4 +80,16 @@ def create_json():
 		json.dump(volumes, outfile)
 	with open('webapp/JSON/3par_host.json', 'w') as outfile:
 		json.dump(hosts, outfile)
+	
+	with open('webapp/JSON/3par_host.json') as data_file:
+	        par3Host_data = json.load(data_file)
+	vluns = []
+	for server in par3Host_data['members']:
+        	try:
+                	vluns += cl.getHostVLUNs(server['name'])
+	        except:
+        	        pass
+
+	with open('webapp/JSON/3par_vlun.json', 'w') as outfile:
+	    json.dump(vluns, outfile)
 

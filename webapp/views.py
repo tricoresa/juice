@@ -45,7 +45,7 @@ class Summary(View):
 				res_dict['groupname']  = customer.name
 				res_dict['groupid'] = customer.groupnameid
 				acronym = customer.acronym
-				vlist,hostlist = applyfilter(acronym)
+				vlist = applyfilter(acronym,source =1)
 				if len(vlist) >  0:
 					ovm_res,total_grp_usage = get_ovm(vlist)
 					for elem in ovm_res:
@@ -56,9 +56,16 @@ class Summary(View):
 							for vm_json in elem['physicalist']:
 								res_dict['physical_disk_size'] += vm_json['total']
 					res_dict['size'] = res_dict['physical_disk_size']+res_dict['virtual_disk_size']	                
+				hostlist = applyfilter(acronym,source =2)
 				if len(hostlist)>0 :
 					infini_res,total_grp_usage = get_infini(hostlist,limit)
 					for res in infini_res:
+						for elem in res.get('disk_list'):
+							res_dict['size'] += elem['size']
+				par3_hostlist = applyfilter(acronym,source =3)
+				if len(par3_hostlist) > 0 :
+					par3_result,par3_usage = get_3par(par3_hostlist)
+					for res in par3_result:
 						for elem in res.get('disk_list'):
 							res_dict['size'] += elem['size']
 				grp_list.append(res_dict)
@@ -364,6 +371,7 @@ class CustomerGroup(View):
 		selected_vms = self.request.POST.getlist('vmlist') or []
 		acronym = self.request.POST.get('acronym') or customer_grp[:4]
 		try:
+			print (selected_vms)
 			grp_obj = JuiceGroupnames.objects.filter(name=customer_grp) if grp_id == 0 else JuiceGroupnames.objects.filter(groupnameid = grp_id)
 			if len(grp_obj) == 0:
 				obj = JuiceGroupnames.objects.create(name=customer_grp,acronym = acronym)
