@@ -15,6 +15,36 @@ from django.shortcuts import render,get_object_or_404,redirect
 #which are registered in a customer group, based on the available filters on the VMreport."""
 # ***************************************************
 
+#------ vm/disk report common module -------#
+def get_result_usage(source=1,cust_acronym='',server = [],limit=0):
+        result = []
+        usage = 0
+        if source ==1:
+                vlist  = applyfilter(cust_acronym,server,source=1)
+                if len(vlist)>0:
+                        result,usage  = get_ovm(vlist)
+                elif  cust_acronym == "" and len(server) == 0:
+                        result,usage = get_ovm([])
+                else:
+                        result,usage = [],0
+        if source ==2:
+                hostlist  = applyfilter(cust_acronym,server,source=2)
+                if len(hostlist)>0:
+                        result,usage = get_infini(hostlist,limit)
+                elif cust_acronym == "" and len(server) == 0:
+                        result,usage = get_infini([],limit)
+                else:
+                        result,usage = [],0
+        if source == 3:
+                par3_hostlist  = applyfilter(cust_acronym,server,source=3)
+                if len(par3_hostlist)>0:
+                        result,usage = get_3par(par3_hostlist)
+                elif cust_acronym == "" and len(server) == 0:
+                        result,usage = get_3par([])
+                else:
+                        result,usage = [],0
+        return result,usage
+
 #---- Summary page lists out all the customer groups with the total disk usage.---#
 class Summary(View):
 	def get(self,request):
@@ -191,10 +221,14 @@ class Dashboard(View):
 		newserverlist = sorted(serverlist, key=lambda k: k['name'])
 	
 		if source == 0:
-			result= ovmresult+infiniresult
-			total_usage = ovm_usage+infini_usage
+			ovm_result,ovm_usage = get_result_usage(1,cust_acronym,server)
+			infini_result,infini_usage = get_result_usage(2,cust_acronym,server,limit)
+			par3_result,par3_usage = get_result_usage(3,cust_acronym,server)
+			result= ovm_result+infini_result+par3_result
+			total_usage = ovm_usage+infini_usage+par3_usage
 		if source ==1:
-			vlist  = applyfilter(cust_acronym,server,source=1)
+			result,total_usage = get_result_usage(1,cust_acronym,server)
+			"""vlist  = applyfilter(cust_acronym,server,source=1)
 			if len(vlist)>0:
 				ovmresult,ovm_usage  = get_ovm(vlist)
 			elif  cust_acronym == "" and len(server) == 0:
@@ -202,7 +236,7 @@ class Dashboard(View):
 			else:
 				ovmresult,ovm_usage = [],0
 			result = ovmresult
-			total_usage = ovm_usage
+			total_usage = ovm_usage"""
 		if source ==2:
 			hostlist  = applyfilter(cust_acronym,server,source=2)
 			if len(hostlist)>0:

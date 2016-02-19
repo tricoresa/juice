@@ -111,6 +111,7 @@ def applyfilter(cust_grp='',server = [],source = 1):
 	
 	return  hostlist
 
+		
 def get_servernames(cust_grp = ""):
 	ovm_vmlist = []
 	infini_serverlist = []

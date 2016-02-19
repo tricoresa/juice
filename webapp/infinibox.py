@@ -1,6 +1,6 @@
 # ----- Infinibox related modules ----#
 import requests
-from webapp.utility import *
+from webapp.utility import infini_host_data,bytesto,infini_volume_data
 
 # ------Infinibox Server List ---- #
 def get_infini_serverlist():
