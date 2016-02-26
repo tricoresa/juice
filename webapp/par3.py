@@ -15,22 +15,22 @@ def get_3par(hostlist):
 		vlunlist = []
 		try:
 			for vlun in par3Vlun_data:
-				if vlun['hostname'] == server['name']:
-					vlunlist.append(vlun)
+				if vlun['hostname'] == server['name'] and vlun['volumeName'] not in vlunlist:
+					vlunlist.append(vlun['volumeName'])
 			for vl in vlunlist:
 				for vol in par3Volume_data['members']:
-					if vl['volumeName'] == vol['name']:
+					if vl == vol['name']:
 						vol_dict = {}
 						vol_dict['id'] = vol['id']
 						vol_dict['name'] = vol['name']
 						vol_dict['size'] =  bytesto(vol['sizeMiB'],'g')
 						vol_dict['WWN'] = vol['wwn']
-						res_dict['total_size'] += bytesto(vol['sizeMiB'],'g')
+						res_dict['total_size'] += vol_dict['size']#bytesto(vol['sizeMiB'],'g')
 						res_dict['disk_list'].append(vol_dict)
-						total_usage += res_dict['total_size']
+			total_usage += res_dict['total_size']
 			reslist.append(res_dict)
 		except:
-			pass
+			return "Some errror occured in 3par calculation",0
 	return reslist, total_usage
 
 def get_3par_serverlist():

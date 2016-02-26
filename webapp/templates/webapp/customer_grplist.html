@@ -99,16 +99,17 @@ $(document).ready(function() {
 <form id= 'checkjob' class="form" role="form" action="/webapp/customer_grplist/" method="post" >
 {%csrf_token%}
 <div class="pull-left">
-{% if pagination.has_previous %}
-            <a href="?page={{ pagination.previous_page_number }}" >previous</a>
-{% endif %}
+<b>Page</b>
+{%for page in pagination.paginator.page_range %}
+  {% ifequal page pagination.number %}
+    <span class="current"><b>{{ page }}</b></span>
+  {% else %}
+    <a href="?page={{ page }}"> {{ page }}</a>
+  {% endifequal %}
+{%endfor%}
 
-<b>Page {{ pagination.number }} of {{ pagination.paginator.num_pages }}.</b>
-
-{% if pagination.has_next %}
-            <a href="?page={{ pagination.next_page_number }}"   >next</a>
-{% endif %}
 </div>
+
 
 {%if active_user =  0 or active_user = 1%} 
 <div class="pull-right" style="margin:2px;">

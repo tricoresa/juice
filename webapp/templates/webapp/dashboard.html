@@ -90,7 +90,6 @@ $(function ()
            <th>Disk Name</td>
            <th>Disk Size</th>
          </tr>
-
          {%for elem  in res.disk_list %}
 	  <tr  {%for discard_str in exclude_list%}{%if discard_str in elem.name|lower%} class="warning" {%endif%}{%endfor%}
 	       {%if '.img'  in elem.name|lower%} class="info"{%endif%} style="text-align:center"> 
@@ -136,7 +135,7 @@ $(function ()
 	<div class="form-group">
            <span>Select Server</span>
 	   <input type="text"  id = "filterinput2" class="input-sm" placeholder="Search Server/VM" autocomplete="off"> 
-		<a href= "" target="_blank" id = "savegrp" >Save group</a>
+		{%if  not active_user = 3 %}	<a href= "" target="_blank" id = "savegrp" >Save group</a> {%endif%}
            <select multiple="multiple" id = 'filter_select2'  name="server"  class="input-sm" style="width:260px;height:200px;">
                 <option value=0 {%if '' in server %}selected=""{%endif%}>All</option>
                 {%for s in serverlist%}

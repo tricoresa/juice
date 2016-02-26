@@ -21,15 +21,14 @@
    <div class="row">
 	<div class="col-sm-9">
 		<div>
-			{% if pagination.has_previous %}
-			<a href="?page={{ pagination.previous_page_number }}&group={{selected_grp}}" >previous</a>
-			{% endif %}
-
-			<b>Page {{ pagination.number }} of {{ pagination.paginator.num_pages }}.</b>
-
-			{% if pagination.has_next %}
-			<a href="?page={{ pagination.next_page_number }}&group={{selected_grp}}" >next</a>
-			{% endif %}
+		<b>Page -</b>
+			{%for page in pagination.paginator.page_range %}
+			  {% ifequal page pagination.number %}
+			    <span class="current"><b>{{ page }}</b></span>
+			  {% else %}
+			    <a href="?page={{ page }}"> {{ page }}</a>
+			  {% endifequal %}
+			{%endfor%}
 		</div>
 
 		<table class="table table-bordered table-hover table-condensed">

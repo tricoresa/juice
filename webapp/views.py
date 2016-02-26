@@ -44,6 +44,7 @@ def get_result_usage(source=1,cust_acronym='',server = [],limit=0):
                 else:
                         result,usage = [],0
         return result,usage
+	
 
 #---- Summary page lists out all the customer groups with the total disk usage.---#
 class Summary(View):
@@ -199,7 +200,7 @@ class Dashboard(View):
 		total_usage = ovm_usage+infini_usage # + par3_usage"""
 		result = []
 		total_usage  = 0
-		return render(request,'webapp/dashboard.html',{'reslist':result,'active_user':active_user,'source':source,'server':server,'serverlist':newserverlist,'cust_grp':custgrp,'customergrouplist':cust_grplist,'total_usage':total_usage,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})	
+		return render(request,'webapp/dashboard.html',{'exclude_list':exclude_list,'reslist':result,'active_user':active_user,'source':source,'server':server,'serverlist':newserverlist,'cust_grp':custgrp,'customergrouplist':cust_grplist,'total_usage':total_usage,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})	
 	def post(self,request):
 
 		if login_required(request.user):
@@ -238,7 +239,8 @@ class Dashboard(View):
 			result = ovmresult
 			total_usage = ovm_usage"""
 		if source ==2:
-			hostlist  = applyfilter(cust_acronym,server,source=2)
+			result,total_usage = get_result_usage(2,cust_acronym,server)
+			"""hostlist  = applyfilter(cust_acronym,server,source=2)
 			if len(hostlist)>0:
 				infiniresult,infini_usage = get_infini(hostlist,limit)
 			elif cust_acronym == "" and len(server) == 0:
@@ -247,9 +249,10 @@ class Dashboard(View):
 				infiniresult,infini_usage = [],0
 
 			result  = infiniresult
-			total_usage = infini_usage
+			total_usage = infini_usage"""
 		if source == 3:
-			par3_hostlist  = applyfilter(cust_acronym,server,source=3)
+			result,total_usage = get_result_usage(2,cust_acronym,server)
+			"""par3_hostlist  = applyfilter(cust_acronym,server,source=3)
 			if len(par3_hostlist)>0:
 				par3_result,par3_usage = get_3par(par3_hostlist)
 			elif cust_acronym == "" and len(server) == 0:
@@ -258,8 +261,8 @@ class Dashboard(View):
 				par3_result,par3_usage = [],0
 
 			result = par3_result
-			total_usage = par3_usage	
-		return render(request,'webapp/dashboard.html',{'reslist':result,'active_user':active_user,'limit':limit,'source':source,'server':server,'serverlist':newserverlist,'cust_grp':custgrp,'customergrouplist':cust_grplist,'total_usage':total_usage,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})
+			total_usage = par3_usage	"""
+		return render(request,'webapp/dashboard.html',{'exclude_list':exclude_list,'reslist':result,'active_user':active_user,'limit':limit,'source':source,'server':server,'serverlist':newserverlist,'cust_grp':custgrp,'customergrouplist':cust_grplist,'total_usage':total_usage,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})
 
 	
 	
@@ -330,6 +333,7 @@ class CustomerGroupList(View):
 		except Exception as e:
 			print ("Customer Grouplist error - ",e)
 			error_msg = "Exception handled in Customer group list"
+
 		return render(request,'webapp/customer_grplist.html',{'active_user':active_user,'reslist':reslist,'pagination':pagination_res,'error_msg':error_msg,'success_msg':success_msg,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})
 
 	def get(self,request):
