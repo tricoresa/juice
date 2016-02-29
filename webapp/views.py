@@ -92,16 +92,17 @@ class Summary(View):
 					infini_res,total_grp_usage = get_infini(hostlist,limit)
 					for res in infini_res:
 						for elem in res.get('disk_list'):
+							res_dict['physical_disk_size'] += elem['size']
 							res_dict['size'] += elem['size']
 				par3_hostlist = applyfilter(acronym,source =3)
 				if len(par3_hostlist) > 0 :
 					par3_result,par3_usage = get_3par(par3_hostlist)
 					for res in par3_result:
 						for elem in res.get('disk_list'):
+							res_dict['physical_disk_size'] += elem['size']
 							res_dict['size'] += elem['size']
 				grp_list.append(res_dict)
 		except Exception as e:
-			print ("Summary Module error - ",e)
 			error_msg = "Exception handled in Summary module"
 
 
@@ -211,58 +212,40 @@ class Dashboard(View):
 		server = self.request.POST.getlist('server') or []
 		limit = 0#int(self.request.POST.get('limit') or 0)
 		cust_grplist = JuiceGroupnames.objects.all().order_by('name')
-		if custgrp > 0:
-			cust_acronym = JuiceGroupnames.objects.get(groupnameid = custgrp).acronym 
-		else:
-			cust_acronym = ''
-		ovm_serverlist = get_ovm_serverlist()
-		infini_serverlist = get_infini_serverlist()
-		par3_serverlist = get_3par_serverlist()
-		serverlist= ovm_serverlist+infini_serverlist+par3_serverlist
-		newserverlist = sorted(serverlist, key=lambda k: k['name'])
-	
-		if source == 0:
-			ovm_result,ovm_usage = get_result_usage(1,cust_acronym,server)
-			infini_result,infini_usage = get_result_usage(2,cust_acronym,server,limit)
-			par3_result,par3_usage = get_result_usage(3,cust_acronym,server)
-			result= ovm_result+infini_result+par3_result
-			total_usage = ovm_usage+infini_usage+par3_usage
-		if source ==1:
-			result,total_usage = get_result_usage(1,cust_acronym,server)
-			"""vlist  = applyfilter(cust_acronym,server,source=1)
-			if len(vlist)>0:
-				ovmresult,ovm_usage  = get_ovm(vlist)
-			elif  cust_acronym == "" and len(server) == 0:
-				ovmresult,ovm_usage = get_ovm([])
+		result= []
+		total_usage = 0
+		error_notify = ''
+		empty_notify  = ''
+		newserverlist = []
+		try:
+			if custgrp > 0:
+				cust_acronym = JuiceGroupnames.objects.get(groupnameid = custgrp).acronym 
 			else:
-				ovmresult,ovm_usage = [],0
-			result = ovmresult
-			total_usage = ovm_usage"""
-		if source ==2:
-			result,total_usage = get_result_usage(2,cust_acronym,server)
-			"""hostlist  = applyfilter(cust_acronym,server,source=2)
-			if len(hostlist)>0:
-				infiniresult,infini_usage = get_infini(hostlist,limit)
-			elif cust_acronym == "" and len(server) == 0:
-				infiniresult,infini_usage = get_infini([],limit)
-			else:
-				infiniresult,infini_usage = [],0
-
-			result  = infiniresult
-			total_usage = infini_usage"""
-		if source == 3:
-			result,total_usage = get_result_usage(2,cust_acronym,server)
-			"""par3_hostlist  = applyfilter(cust_acronym,server,source=3)
-			if len(par3_hostlist)>0:
-				par3_result,par3_usage = get_3par(par3_hostlist)
-			elif cust_acronym == "" and len(server) == 0:
-				par3_result,par3_usage = get_3par([])
-			else:
-				par3_result,par3_usage = [],0
-
-			result = par3_result
-			total_usage = par3_usage	"""
-		return render(request,'webapp/dashboard.html',{'exclude_list':exclude_list,'reslist':result,'active_user':active_user,'limit':limit,'source':source,'server':server,'serverlist':newserverlist,'cust_grp':custgrp,'customergrouplist':cust_grplist,'total_usage':total_usage,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})
+				cust_acronym = ''
+			ovm_serverlist = get_ovm_serverlist()
+			infini_serverlist = get_infini_serverlist()
+			par3_serverlist = get_3par_serverlist()
+			serverlist= ovm_serverlist+infini_serverlist+par3_serverlist
+			newserverlist = sorted(serverlist, key=lambda k: k['name'])
+			if source == 0:
+				ovm_result,ovm_usage = get_result_usage(1,cust_acronym,server)
+				infini_result,infini_usage = get_result_usage(2,cust_acronym,server,limit)
+				par3_result,par3_usage = get_result_usage(3,cust_acronym,server)
+				result= ovm_result+infini_result+par3_result
+				total_usage = ovm_usage+infini_usage+par3_usage
+			if source ==1:
+				result,total_usage = get_result_usage(1,cust_acronym,server)
+			if source ==2:
+				result,total_usage = get_result_usage(2,cust_acronym,server)
+			if source == 3:
+				result,total_usage = get_result_usage(3,cust_acronym,server)
+			if 'Error'  in result:
+				error_notify = str(result)
+			if len(result) == 0:
+				empty_notify = "No result matching the filters"
+		except Exception as e:
+			error_notify = "Error in Report caluclation - "+str(e)
+		return render(request,'webapp/dashboard.html',{'error_notify':error_notify,'empty_notify':empty_notify,'exclude_list':exclude_list,'reslist':result,'active_user':active_user,'limit':limit,'source':source,'server':server,'serverlist':newserverlist,'cust_grp':custgrp,'customergrouplist':cust_grplist,'total_usage':total_usage,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})
 
 	
 	
