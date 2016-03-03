@@ -87,46 +87,66 @@ def pagination(obj,limit,page=1):
                 pagination_res = paginator.page(paginator.num_pages)
         return pagination_res
 
-def applyfilter(cust_grp='',server = [],source = 1):
+def applyfilter(hostidlist=[],cust_grp_acronym='',server = [],server_acronym='',source = 1):
 	hostlist = []
 	if source ==1:
 		for vm in vmdata:
-			if cust_grp != '' and  cust_grp.lower() in vm['id']['name'].lower():
+			if len(hostidlist) > 0  and vm['id']['value'] in hostidlist and vm not in hostlist:
+				hostlist.append(vm)	
+			elif cust_grp_acronym != '' and  cust_grp_acronym.lower() in vm['id']['name'].lower() and vm not in hostlist:
 				hostlist.append(vm)
-			if len(server) != 0 and vm['id']['value'] in server:
+			if len(server) != 0 and vm['id']['value'] in server and vm not in hostlist:
 			        hostlist.append(vm)
 	if source ==2:
-		for host in infini_host_data['result']:
-			if cust_grp != '' and cust_grp.lower() in host['name'].lower():
+		tmp_list = []
+		print (server)
+		print (server_acronym)
+		for host in infini_host_data:#['result']:
+			if len(hostidlist) > 0  and str(host['id']) in hostidlist and host not in hostlist:
+                                hostlist.append(host)
+
+			elif cust_grp_acronym != '' and cust_grp_acronym.lower() in host['name'].lower() and host not in hostlist:
 				hostlist.append(host)
-	
-			if len(server) != 0 and str(host['id']) in server:
+			if  len(server) != 0 and str(host['id']) in server:
+				tmp_list.append(host['name'])
+			elif server_acronym != '' and server_acronym.lower() in host['name'].lower() and host not in hostlist:
 				hostlist.append(host)
+			if host['name'] in tmp_list and host not in hostlist:
+				hostlist.append(host)
+			
 	if source ==3:
 		for par3_host in par3Host_data['members']:
-			if cust_grp != '' and cust_grp.lower() in par3_host['name'].lower():
+			if len(hostidlist) > 0 and str(par3_host['id']) in hostidlist and par3_host not in hostlist:
 				hostlist.append(par3_host)
-			if len(server) != 0 and str(par3_host['id']) in server:
+			elif cust_grp_acronym != '' and cust_grp_acronym.lower() in par3_host['name'].lower() and par3_host not in hostlist:
+				hostlist.append(par3_host)
+			if len(server) != 0 and str(par3_host['id']) in server and par3_host not in hostlist:
 				hostlist.append(par3_host)
 	
 	return  hostlist
 
 		
-def get_servernames(cust_grp = ""):
+def get_servernames(cust_grp = "",hostidlist = []):
 	ovm_vmlist = []
 	infini_serverlist = []
 	par3_serverlist = []
 	for vm in vmdata:
 		if cust_grp != '' and  cust_grp.lower() in vm['id']['name'].lower():
 			ovm_vmlist.append(vm['id']['name'])
-	for server in infini_host_data['result']:		
+		elif len(hostidlist) > 0 and vm['id']['value'] in hostidlist:
+			ovm_vmlist.append(vm['id']['name'])	
+	for server in infini_host_data : #['result']:		
 		if cust_grp != '' and cust_grp.lower() in server['name'].lower():
 			infini_serverlist.append(server['name'])
+		elif len(hostidlist) > 0 and str(server['id']) in hostidlist:
+			infini_serverlist.append(server['name'])	
 	for host in par3Host_data['members']:
 		if cust_grp != '' and cust_grp.lower() in host['name'].lower():
 			par3_serverlist.append(host['name'])
-	return ovm_vmlist,infini_serverlist,par3_serverlist
-
+		elif len(hostidlist) > 0 and str(host['id']) in hostidlist:
+			par3_serverlist.append(host['name'])	
+	return ( ovm_vmlist,infini_serverlist,par3_serverlist)
+	
 # --- Details of OVM repositories ----#
 def get_repo_detail(repoid):
 	repoFileIds = session.get(baseUri+'/Repository/'+str(repoid)+'/FileSystem')
@@ -147,69 +167,73 @@ def get_ovm_serverlist():
 	return ovm_serverlist
 
 def get_ovm(vlist):
-        reslist = []
-        total_usage= 0
-        try:
-                if len(vlist) == 0:
-                        vlist = [vm  for  vm in vmdata]
-                for v in vlist:
-                                res_dict = {}
-                                total_size = 0
-                                physicalist = []
-                                virtualist = []
-                                id = v['id']['value']
-                                res_dict['vmname'] = v['id']['name']
-                                serverId = v['serverId']
-                                res_dict['servername'] = serverId['name'] if serverId else "none"
-                                for disk in vmdiskmapping_data:
-                                        if disk['vmId']['value'] == id and disk['storageElementId']!= None:
-                                                diskname =  disk.get('storageElementId').get('name') if disk.get('storageElementId').get('name') else 'None'
-                                                physical_dict = {}
-                                                physical_dict['name'] = diskname
-                                                physicaldisk_id = disk.get('storageElementId').get('value')
-                                                physical_dict['id'] = physicaldisk_id
+	total_usage= 0
+	res_dict  = {}
+	try:
+		if len(vlist) == 0:
+			vlist = [vm  for  vm in vmdata]
 
-                                                #for physical disk size
-                                                for storage in storagelemdata:
-                                                        if storage['id']['value'] == str(physicaldisk_id):
-                                                                storageObj = storage
-                                                physical_disk_size = bytesto(storageObj['size'],'g')
-                                                physical_dict['size'] = physical_disk_size
-                                                physical_dict['total'] = 0
-                                                if not any(substr in diskname.lower() for substr in exclude_list):
-                                                        #for total vm size
-                                                        total_size += int(physical_disk_size)
-                                                        physical_dict['total'] += int(physical_disk_size)
-                                                physical_dict['repo_name'] = ""
-                                                physicalist.append(physical_dict)
-                                        elif  disk['vmId']['value'] == id and disk.get('virtualDiskId') != None:
-                                                diskname = disk.get('virtualDiskId').get('name') if disk.get('virtualDiskId').get('name') else 'None'
-                                                virtual_dict = {}
-                                                virtual_dict['name'] = diskname
-                                                virtualdisk_id = disk.get('virtualDiskId').get('value')
-                                                virtual_dict['id'] = virtualdisk_id
-                                                virtual_dict['total'] = 0
-                                                #for virtual disk size and repo name
-                                                for virtualdisk in virtualdiskdata:
-                                                        if virtualdisk['id']['value'] == str(virtualdisk_id):
-                                                                virtualdiskObj = virtualdisk
-                                                virtual_disk_size = bytesto(virtualdiskObj['onDiskSize'],'g')
-                                                virtual_dict['size'] = virtual_disk_size
-                                                if  virtualdiskObj.get('repositoryId'):
-                                                        virtual_dict['repo_name'] = virtualdiskObj['repositoryId']['name']
-                                                if not any(substr in diskname.lower() for substr in exclude_list):
-                                                        #for total vm size
-                                                        total_size += int(virtual_disk_size)
-                                                        virtual_dict['total'] += int(virtual_disk_size)
-                                                virtualist.append(virtual_dict)
-                                total_usage  += total_size
-                                res_dict['vm_name']= v['id']['name']
-                                res_dict['virtualist'] = virtualist
-                                res_dict['physicalist'] = physicalist
-                                res_dict['disk_list']  = virtualist+physicalist
-                                res_dict['total_size'] = total_size
-                                reslist.append(res_dict)
-        except Exception as e:
-                reslist = "Error in OVM calculation - "+str( e)
-        return (reslist,total_usage)
+		for v in vlist:
+			serverId = v['serverId']
+			if not serverId:
+				continue;
+			servername = serverId.get('name') if serverId else 'None'
+			if serverId['name'] not in  res_dict:
+				res_dict[servername] = {}
+				res_dict[servername] ['physicalist']  = []
+				res_dict[servername]['virtualist'] = []
+				res_dict[servername]['total_size'] = 0
+
+			id = v['id']['value']
+			res_dict[servername]['vmname'] = v['id']['name']
+
+			for disk in vmdiskmapping_data:
+				if disk['vmId']['value'] == id and disk['storageElementId']!= None:
+						diskname =  disk.get('storageElementId').get('name') if disk.get('storageElementId').get('name') else 'None'
+						physical_dict = {}
+						physical_dict['name'] = diskname
+						physicaldisk_id = disk.get('storageElementId').get('value')
+						physical_dict['id'] = physicaldisk_id
+
+						#for physical disk size
+						for storage in storagelemdata:
+							if storage['id']['value'] == str(physicaldisk_id):
+								storageObj = storage
+						physical_disk_size = bytesto(storageObj['size'],'g')
+						physical_dict['size'] = physical_disk_size
+						physical_dict['total'] = 0
+						if not any(substr in diskname.lower() for substr in exclude_list):
+							#for total vm size
+							res_dict[servername]['total_size'] += int(physical_disk_size)
+							physical_dict['total'] += int(physical_disk_size)
+						physical_dict['repo_name'] = ""
+						res_dict[servername]['physicalist'].append(physical_dict)
+				elif  disk['vmId']['value'] == id and disk.get('virtualDiskId') != None:
+						diskname = disk.get('virtualDiskId').get('name') if disk.get('virtualDiskId').get('name') else 'None'
+						virtual_dict = {}
+						virtual_dict['name'] = diskname
+						virtualdisk_id = disk.get('virtualDiskId').get('value')
+						virtual_dict['id'] = virtualdisk_id
+						virtual_dict['total'] = 0
+						#for virtual disk size and repo name
+						for virtualdisk in virtualdiskdata:
+							if virtualdisk['id']['value'] == str(virtualdisk_id):
+								virtualdiskObj = virtualdisk
+						virtual_disk_size = bytesto(virtualdiskObj['onDiskSize'],'g')
+						virtual_dict['size'] = virtual_disk_size
+						if  virtualdiskObj.get('repositoryId'):
+							virtual_dict['repo_name'] = virtualdiskObj['repositoryId']['name']
+						if not any(substr in diskname.lower() for substr in exclude_list):
+							#for total vm size
+							res_dict[servername]['total_size'] += int(virtual_disk_size)
+							virtual_dict['total'] += int(virtual_disk_size)
+						res_dict[servername]['virtualist'].append(virtual_dict)
+			total_usage  += res_dict[servername]['total_size']
+			res_dict[servername]['vm_name']= v['id']['name']
+
+			res_dict[servername]['disk_list']  = res_dict[servername]['virtualist']+res_dict[servername]['physicalist']
+	except Exception as e:
+		reslist = "Error in OVM calculation - "+str( e)
+	return (res_dict,total_usage)
+
 

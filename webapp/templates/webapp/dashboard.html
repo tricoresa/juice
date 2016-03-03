@@ -23,6 +23,11 @@ $(function ()
 		    }
 
 	});
+	$("#clear_server").click(function(){
+		$('select#filter_select2 option').removeAttr("selected");
+		$("#vmreport_filter").submit();
+	
+	});
 	$("#savegrp").click(function() {
 		var res = [];
 	        $.each($("#filter_select2 option:selected"), function(){            
@@ -79,9 +84,9 @@ $(function ()
 	</form>
     </div>
     {%if error_notify == ''%}
-    {%for res in reslist%}
+    {% for key, res in reslist.items %}
       <ul>
-        <li><h5><u>{{res.vm_name}}</u> (server- <b>{{res.servername}}</b>)</h5>  Total Disk size = {{res.total_size}}</li>
+        <li><h5><u>{{res.vm_name}}</u> (server- <b>{{key}}</b>)</h5>  Total Disk size = {{res.total_size}}</li>
        </ul>
        <table class='table table-bordered table-hover table-striped' style="table-layout: fixed; word-wrap: break-word;">
          <tr class="text-center">
@@ -136,8 +141,8 @@ $(function ()
          </div>
 		
 	<div class="form-group">
-           <span>Select Server</span>
-	   <input type="text"  id = "filterinput2" class="input-sm" placeholder="Search Server/VM" autocomplete="off"> 
+           <span>Select Server  /  </span><a href= "javascript:;" id = "clear_server" >Clear server</a>
+	   <input type="text" name="server_acronym" id = "filterinput2" class="input-sm" placeholder="Search Server/VM" autocomplete="off"> 
 		{%if  not active_user = 3 %}	<a href= "" target="_blank" id = "savegrp" >Save group</a> {%endif%}
            <select multiple="multiple" id = 'filter_select2'  name="server"  class="input-sm" onchange="this.form.submit()"onchange="this.form.submit()" style="width:260px;height:200px;">
                 <option value=0 {%if '' in server %}selected=""{%endif%}>All</option>
