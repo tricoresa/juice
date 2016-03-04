@@ -99,8 +99,6 @@ def applyfilter(hostidlist=[],cust_grp_acronym='',server = [],server_acronym='',
 			        hostlist.append(vm)
 	if source ==2:
 		tmp_list = []
-		print (server)
-		print (server_acronym)
 		for host in infini_host_data:#['result']:
 			if len(hostidlist) > 0  and str(host['id']) in hostidlist and host not in hostlist:
                                 hostlist.append(host)

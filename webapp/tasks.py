@@ -51,7 +51,28 @@ def create_json():
 	
 	
 	# Saving the JSON data for INFINIBOX
+	host_list=inf_session.get(host_baseUri+"?page_size="+str(PAGE_SIZE))
+	host_list_json=host_list.json()
+
+	host_list2=inf_session.get(host_baseUri2+"?page_size="+str(PAGE_SIZE))
+	host_list_json2=host_list2.json()
+
+	host_data = host_list_json['result']+host_list_json2['result']
+
 	volume_list = inf_session.get(vol_baseUri+"?page_size="+str(PAGE_SIZE))
+	volume_list_json = volume_list.json()
+
+	volume_list2 = inf_session.get(vol_baseUri2+"?page_size="+str(PAGE_SIZE))
+	volume_list_json2 = volume_list2.json()
+
+	volume_data = volume_list_json['result'] + volume_list_json2['result']
+	with open('JSON/infini_vol.json', 'w') as outfile:
+		json.dump(volume_data, outfile)
+
+	with open('JSON/infini_host.json', 'w') as outfile:
+		json.dump(host_data, outfile)
+
+	"""volume_list = inf_session.get(vol_baseUri+"?page_size="+str(PAGE_SIZE))
 	volume_list_json = volume_list.json()
 	
 	host_list=inf_session.get(host_baseUri+"?page_size="+str(PAGE_SIZE))
@@ -61,7 +82,7 @@ def create_json():
 	    json.dump(volume_list_json, outfile)
 	
 	with open('webapp/JSON/infini_host.json', 'w') as outfile:
-	    json.dump(host_list_json, outfile)
+	    json.dump(host_list_json, outfile)"""
 	
 
 

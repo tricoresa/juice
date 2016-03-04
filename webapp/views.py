@@ -29,7 +29,6 @@ def get_result_usage(source=1,hostidlist=[],cust_acronym='',server = [],server_a
                         result,usage = {},0
         if source ==2:
                 hostlist  = applyfilter(hostidlist,cust_acronym,server,server_acronym,source=2)
-                print (len(hostlist))
                 if len(hostlist)>0:
                         result,usage = get_infini(hostlist,limit)
                 elif cust_acronym == "" and len(server) == 0 and server_acronym == '':
