@@ -135,7 +135,7 @@ $(function ()
            <select name="group" id = "filter_select1" onchange="this.form.submit()" class="input-sm" style="width:260px;">
                 <option value="0" {%ifequal cust_grp 0%}selected=""{%endifequal%}>All</option>
                 {%for grp in customergrouplist%}
-                  <option label={{grp.name}} value={{grp.groupnameid}} {%ifequal grp.groupnameid cust_grp%}selected=""{%endifequal%}>{{grp.name}}</option>
+                  <option  value={{grp.groupnameid}} {%ifequal grp.groupnameid cust_grp%}selected=""{%endifequal%}>{{grp.name}}</option>
                 {%endfor%}
            </select>
          </div>
