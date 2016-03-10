@@ -37,7 +37,7 @@ def get_result_usage(source=1,hostidlist=[],cust_acronym='',server = [],server_a
                         result,usage = {},0
         if source == 3:
                 par3_hostlist  = applyfilter(hostidlist,cust_acronym,server,source=3)
-                if len(par3_hostlist)>0:
+                if len(par3_hostlist)>0: 
                         result,usage = get_3par(par3_hostlist)
                 elif cust_acronym == "" and len(server) == 0:
                         result,usage = get_3par([])
@@ -76,9 +76,10 @@ class Summary(View):
 				res_dict['groupname']  = customer.name
 				res_dict['groupid'] = customer.groupnameid
 				acronym = customer.acronym
-				vlist = applyfilter(acronym,source =1)
+				vlist = applyfilter([],acronym,[],'',source =1)
 				if len(vlist) >  0:
 					ovm_res,total_grp_usage = get_ovm(vlist)
+					print (ovm_res)
 					for key, elem in ovm_res.items():
 						if len(elem.get('virtualist')) > 0 :
 							for vm_json in elem['virtualist']:
@@ -87,7 +88,7 @@ class Summary(View):
 							for vm_json in elem['physicalist']:
 								res_dict['physical_disk_size'] += vm_json['total']
 					res_dict['size'] = res_dict['physical_disk_size']+res_dict['virtual_disk_size']	                
-				hostlist = applyfilter(acronym,source =2)
+				hostlist = applyfilter([],acronym,[],'',source =2)
 				if len(hostlist)>0 :
 					infini_res,total_grp_usage = get_infini(hostlist,limit)
 					for key,res in infini_res.items():
@@ -95,7 +96,7 @@ class Summary(View):
 						for elem in res.get('disk_list'):
 							res_dict['physical_disk_size'] += elem['size']
 							res_dict['size'] += elem['size']
-				par3_hostlist = applyfilter(acronym,source =3)
+				par3_hostlist = applyfilter([],acronym,[],'',source =3)
 				if len(par3_hostlist) > 0 :
 					par3_result,par3_usage = get_3par(par3_hostlist)
 					for key,res in par3_result.items():
@@ -180,8 +181,8 @@ class Dashboard(View):
 		ovm_serverlist = get_ovm_serverlist()
 		infini_serverlist = get_infini_serverlist()
 		par3_serverlist = get_3par_serverlist()
-		serverlist= ovm_serverlist+infini_serverlist +par3_serverlist
-		newserverlist = sorted(serverlist, key=lambda k: k['name'])
+		serverlist = ovm_serverlist + infini_serverlist + par3_serverlist
+		newserverlist = set(serverlist )
 		cust_acronym = ''
 		result = []
 		total_usage  = 0
@@ -197,7 +198,7 @@ class Dashboard(View):
 		server_acronym = self.request.POST.get('server_acronym') or ''
 		limit = 0#int(self.request.POST.get('limit') or 0)
 		cust_grplist = JuiceGroupnames.objects.all().order_by('name')
-		result={}
+		result=[]
 		total_usage = 0
 		error_notify = ''
 		empty_notify  = ''
@@ -209,29 +210,35 @@ class Dashboard(View):
 				cust_acronym = ''
 			hostidlist = []
 			vmgrpObj = JuiceGroupvm.objects.filter(groupid = custgrp)
+			print (custgrp)
 			for vm in vmgrpObj:
 				hostidlist.append(vm.vm)
+			print (hostidlist)
 			ovm_serverlist = get_ovm_serverlist()
 			infini_serverlist = get_infini_serverlist()
 			par3_serverlist = get_3par_serverlist()
-			serverlist= ovm_serverlist+infini_serverlist+par3_serverlist
-			newserverlist = sorted(serverlist, key=lambda k: k['name'])
+			serverlist = ovm_serverlist + infini_serverlist + par3_serverlist
+			newserverlist = set(serverlist)
+
 			if source == 0:
 				ovm_result,ovm_usage = get_result_usage(1,hostidlist,cust_acronym,server,server_acronym)
 				infini_result,infini_usage = get_result_usage(2,hostidlist,cust_acronym,server,server_acronym,limit)
 				par3_result,par3_usage = get_result_usage(3,hostidlist,cust_acronym,server,server_acronym)
-				result.update(ovm_result)
-				result.update(infini_result)
-				result.update(par3_result)
+				result.append(ovm_result)
+				result.append(infini_result)
+				result.append(par3_result)
 				total_usage = ovm_usage+infini_usage+par3_usage
 			if source ==1:
-				result,total_usage = get_result_usage(1,hostidlist,cust_acronym,server,server_acronym)
+				res,total_usage = get_result_usage(1,hostidlist,cust_acronym,server,server_acronym)
+				result.append(res)
 			if source ==2:
-				result,total_usage = get_result_usage(2,hostidlist,cust_acronym,server,server_acronym)
+				res,total_usage = get_result_usage(2,hostidlist,cust_acronym,server,server_acronym)
+				result.append(res)
 			if source == 3:
-				result,total_usage = get_result_usage(3,hostidlist,cust_acronym,server,server_acronym)
+				res,total_usage = get_result_usage(3,hostidlist,cust_acronym,server,server_acronym)
+				result.append(res)
 			if 'Error'  in result:
-				error_notify = str(result)
+				error_notify = str(res)
 			if len(result) == 0:
 				empty_notify = "No result matching the filters"
 		except Exception as e:

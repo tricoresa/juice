@@ -84,7 +84,8 @@ $(function ()
 	</form>
     </div>
     {%if error_notify == ''%}
-    {% for key, res in reslist.items %}
+    {% for item in reslist %}
+	{% for key, res in item.items %}
       <ul>
         <li><h5><u>{{res.vm_name}}</u> (server- <b>{{key}}</b>)</h5>  Total Disk size = {{res.total_size}}</li>
        </ul>
@@ -105,10 +106,11 @@ $(function ()
            </tr>
         {%endfor%}
        </table>
-     {%empty%}
-	<p style="background-color: #F3D2D8;">{{empty_notify}}</p>
-         <p class="text-danger">PLEASE SELECT THE SOURCE DEPENDENT FILTERS TO VIEW THE VM/DISK REPORT FOR OVM/INFINIBOX/3PAR</p>
      {%endfor%}
+     {%empty%}
+        <p style="background-color: #F3D2D8;">{{empty_notify}}</p>
+         <p class="text-danger">PLEASE SELECT THE SOURCE DEPENDENT FILTERS TO VIEW THE VM/DISK REPORT FOR OVM/INFINIBOX/3PAR</p>
+   {%endfor%}
     {%endif%}
    <p style="background-color: #F3D2D8;">{{error_notify}}</p>
    </div>
@@ -147,7 +149,7 @@ $(function ()
            <select multiple="multiple" id = 'filter_select2'  name="server"  class="input-sm" onchange="this.form.submit()"onchange="this.form.submit()" style="width:260px;height:200px;">
                 <option value=0 {%if '' in server %}selected=""{%endif%}>All</option>
                 {%for s in serverlist%}
-                  <option value={{s.value}} {%if s.value in server%}selected=""{%endif%}>{{s.name}}</option>
+                  <option value={{s}} {%if s.value in server%}selected=""{%endif%}>{{s}}</option>
                 {%endfor%}
            </select>
          </div>

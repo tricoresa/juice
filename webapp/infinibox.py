@@ -7,16 +7,16 @@ def get_infini_serverlist():
 	serverlist = []
 	hostnamelist = []
 	for host  in infini_host_data: #['result']:
-		server_dict = {}
+		#server_dict = {}
 		name= host['name']
 		id = host['id']
 		if name not in hostnamelist:
-			server_dict['name'] = name
+			"""server_dict['name'] = name
 			server_dict['value'] = str(id)
 			serverlist.append(server_dict)
-
+			"""
 			hostnamelist.append(name)
-	return serverlist
+	return hostnamelist
 
 #---- Given the HOST and Volume list object, it calculates the disk names, disk ids and size of disk for each host  ----# 
 def get_infini(hostlist,limit=1000):

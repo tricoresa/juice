@@ -5,9 +5,10 @@ def get_3par(hostlist):
 	serverlist = []
 	res_dict = {}
 	if len(hostlist)== 0:
-		hostlist = par3Host_data['members'] 
+		hostlist = par3Host_data#['members'] 
 	try:
 		for server in hostlist:
+
 			if server['name'] not in res_dict:
 				res_dict[server['name']] = {}
 				res_dict[server['name']]['total_size'] = 0
@@ -17,7 +18,7 @@ def get_3par(hostlist):
 				if vlun['hostname'] == server['name'] and vlun['volumeName'] not in vlunlist:
 					vlunlist.append(vlun['volumeName'])
 			for vl in vlunlist:
-				for vol in par3Volume_data['members']:
+				for vol in par3Volume_data: #['members']:
 					if vl == vol['name']:
 						vol_dict = {}
 						vol_dict['id'] = vol['id']
@@ -32,12 +33,15 @@ def get_3par(hostlist):
 	return res_dict, total_usage
 
 def get_3par_serverlist():
-	 
+	hostnamelist = []	 
 	serverlist = []
-	for server in par3Host_data['members']:
-		server_dict = {}
-		server_dict['name'] = server['name']
-		server_dict['value'] = str( server['id'])
-		serverlist.append(server_dict)
-	return serverlist
+	for server in par3Host_data: #['members']:
+		if 'name' in server and 'id' in server:
+			if server['name'] not in hostnamelist:
+				"""server_dict = {}
+				server_dict['name'] = server['name']
+				server_dict['value'] = str( server['id'])
+				serverlist.append(server_dict)"""
+				hostnamelist.append(server['name'])
+	return hostnamelist
 

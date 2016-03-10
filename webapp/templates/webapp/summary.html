@@ -48,7 +48,7 @@
 						 <form id = "vmreport_filter" class="form" role="form" action="/webapp/vmreport/" method="POST">
 						{% csrf_token %}
 							<a href="javascript:;" onclick="document.getElementById('vmreport_filter').submit();">{{res.groupname}}</a>
-							<input type="hidden" name="group" value="{{res.groupid}}" />
+							<input type="hidden" name="group" value={{res.groupid}} />
 						</form>
 					</td>
 					<!--td>{{res.physical_name}}</td-->

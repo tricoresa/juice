@@ -72,6 +72,7 @@ def create_json():
 	with open('JSON/infini_host.json', 'w') as outfile:
 		json.dump(host_data, outfile)
 
+	
 	"""volume_list = inf_session.get(vol_baseUri+"?page_size="+str(PAGE_SIZE))
 	volume_list_json = volume_list.json()
 	
@@ -86,31 +87,42 @@ def create_json():
 	
 
 
-	#Saving the 3par JSOn data
+	#Saving the 3par JSOn data from 2 IPs (10.62.100.6, 10.66.100.6)
 	from hp3parclient import client, exceptions
 	username='juice'
 	password='tcs_juice'
+	vluns = []
+	
 	host='10.66.100.6'
-
 	cl = client.HP3ParClient("https://%s:8080/api/v1" % host)
 	cl.login(username, password)
+	volumes1 = cl.getVolumes()['members']
+	hosts1 = cl.getHosts()['members']
 
-	volumes = cl.getVolumes()
-	hosts = cl.getHosts()
+	host2='10.62.100.6'
+	cl2 = client.HP3ParClient("https://%s:8080/api/v1" % host2)
+	cl2.login(username, password)
+	volumes2 = cl2.getVolumes()['members']
+	hosts2 = cl2.getHosts()['members']
+
+	volume_data = volumes1+volumes2
+	host_data = hosts1+hosts2
+
+	for host in hosts1:
+		try:
+			vluns += cl.getHostVLUNs(host['name'])
+		except:
+			pass
+	for host in hosts2:
+		try:
+			vluns += cl2.getHostVLUNs(host['name'])
+		except:
+			pass
 	with open('webapp/JSON/3par_vol.json', 'w') as outfile:
-		json.dump(volumes, outfile)
+		json.dump(volume_data, outfile)
 	with open('webapp/JSON/3par_host.json', 'w') as outfile:
-		json.dump(hosts, outfile)
-	
-	with open('webapp/JSON/3par_host.json') as data_file:
-	        par3Host_data = json.load(data_file)
-	vluns = []
-	for server in par3Host_data['members']:
-        	try:
-                	vluns += cl.getHostVLUNs(server['name'])
-	        except:
-        	        pass
-
+		json.dump(host_data, outfile)
 	with open('webapp/JSON/3par_vlun.json', 'w') as outfile:
 	    json.dump(vluns, outfile)
-
+	cl.logout()
+	cl2.logout()

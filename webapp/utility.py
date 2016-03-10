@@ -88,39 +88,45 @@ def pagination(obj,limit,page=1):
         return pagination_res
 
 def applyfilter(hostidlist=[],cust_grp_acronym='',server = [],server_acronym='',source = 1):
+	#hostidlist1, hostidlist2, hostidlist3 = get_servernames('',hostidlist)
+	#print (hostidlist1,hostidlist2,hostidlist3)
 	hostlist = []
+	#server1,server2,server3  = get_servernames('',server)
 	if source ==1:
 		for vm in vmdata:
 			if len(hostidlist) > 0  and vm['id']['value'] in hostidlist and vm not in hostlist:
 				hostlist.append(vm)	
 			elif cust_grp_acronym != '' and  cust_grp_acronym.lower() in vm['id']['name'].lower() and vm not in hostlist:
 				hostlist.append(vm)
-			if len(server) != 0 and vm['id']['value'] in server and vm not in hostlist:
-			        hostlist.append(vm)
+			if len(server) != 0 :
+				if vm['id']['name'] in server and vm not in hostlist:
+				        hostlist.append(vm)
 	if source ==2:
-		tmp_list = []
 		for host in infini_host_data:#['result']:
 			if len(hostidlist) > 0  and str(host['id']) in hostidlist and host not in hostlist:
                                 hostlist.append(host)
 
 			elif cust_grp_acronym != '' and cust_grp_acronym.lower() in host['name'].lower() and host not in hostlist:
 				hostlist.append(host)
-			if  len(server) != 0 and str(host['id']) in server:
-				tmp_list.append(host['name'])
+			if  len(server) != 0 :
+				if str(host['name']) in server:
+					 hostlist.append(host)
 			elif server_acronym != '' and server_acronym.lower() in host['name'].lower() and host not in hostlist:
-				hostlist.append(host)
-			if host['name'] in tmp_list and host not in hostlist:
 				hostlist.append(host)
 			
 	if source ==3:
-		for par3_host in par3Host_data['members']:
-			if len(hostidlist) > 0 and str(par3_host['id']) in hostidlist and par3_host not in hostlist:
-				hostlist.append(par3_host)
-			elif cust_grp_acronym != '' and cust_grp_acronym.lower() in par3_host['name'].lower() and par3_host not in hostlist:
-				hostlist.append(par3_host)
-			if len(server) != 0 and str(par3_host['id']) in server and par3_host not in hostlist:
-				hostlist.append(par3_host)
-	
+		tmp_list = []
+		for par3_host in par3Host_data :#['members']:
+			if 'name' in par3_host  and 'id' in par3_host:
+				if len(hostidlist) > 0 and str(par3_host['id']) in hostidlist and par3_host not in hostlist:
+					hostlist.append(par3_host)
+				elif cust_grp_acronym != '' and cust_grp_acronym.lower() in par3_host['name'].lower() and par3_host not in hostlist:
+					hostlist.append(par3_host)
+				if len(server) != 0:
+					if str(par3_host['name']) in server:
+						hostlist.append(par3_host)
+				elif server_acronym != '' and server_acronym.lower() in par3_host['name'].lower() and par3_host not in hostlist:
+					hostlist.append(par3_host)
 	return  hostlist
 
 		
@@ -138,11 +144,12 @@ def get_servernames(cust_grp = "",hostidlist = []):
 			infini_serverlist.append(server['name'])
 		elif len(hostidlist) > 0 and str(server['id']) in hostidlist:
 			infini_serverlist.append(server['name'])	
-	for host in par3Host_data['members']:
-		if cust_grp != '' and cust_grp.lower() in host['name'].lower():
-			par3_serverlist.append(host['name'])
-		elif len(hostidlist) > 0 and str(host['id']) in hostidlist:
-			par3_serverlist.append(host['name'])	
+	for host in par3Host_data:#['members']:
+		if 'id' in host and 'name' in host:
+			if cust_grp != '' and cust_grp.lower() in host['name'].lower():
+				par3_serverlist.append(host['name'])
+			elif len(hostidlist) > 0 and str(host['id']) in hostidlist:
+				par3_serverlist.append(host['name'])	
 	return ( ovm_vmlist,infini_serverlist,par3_serverlist)
 	
 # --- Details of OVM repositories ----#
@@ -161,7 +168,7 @@ def get_repo_detail(repoid):
 def get_ovm_serverlist():
 	ovm_serverlist = []
 	for vm in vmdata:
-		ovm_serverlist.append(vm['id'])
+		ovm_serverlist.append(vm['name'])
 	return ovm_serverlist
 
 def get_ovm(vlist):
