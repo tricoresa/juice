@@ -57,7 +57,7 @@ class Summary(View):
 		pagination_res = None
 		error_msg = ''
 		customergrouplist = JuiceGroupnames.objects.all().order_by('name')
-		selected_grpid = int(self.request.GET.get('group') or 0)
+		selected_grpid = int(self.request.GET.get('group_filter') or 0)
 		if selected_grpid > 0:
 			groupObj = JuiceGroupnames.objects.filter(groupnameid=selected_grpid).order_by('name')
 		else:
@@ -69,17 +69,19 @@ class Summary(View):
 		try:
 			for customer in pagination_res:
 				res_dict =  {}
+				res_dict['hostidlist'] = []	
 				res_dict['physical_disk_size'] = 0
 				res_dict['virtual_disk_size'] = 0
 				res_dict ['size'] = 0  
 				total_grp_usage = 0
 				res_dict['groupname']  = customer.name
 				res_dict['groupid'] = customer.groupnameid
-				acronym = customer.acronym
-				vlist = applyfilter([],acronym,[],'',source =1)
+				grpDetailObj = JuiceGroupvm.objects.filter(groupid=customer.groupnameid)
+				for detail in grpDetailObj:
+					res_dict['hostidlist'].append(detail.vm)
+				vlist = applyfilter(res_dict['hostidlist'],'',[],'',source =1)
 				if len(vlist) >  0:
-					ovm_res,total_grp_usage = get_ovm(vlist)
-					print (ovm_res)
+					ovm_res,ovm_usage = get_ovm(vlist)
 					for key, elem in ovm_res.items():
 						if len(elem.get('virtualist')) > 0 :
 							for vm_json in elem['virtualist']:
@@ -87,20 +89,18 @@ class Summary(View):
 						if len(elem.get('physicalist')) > 0:
 							for vm_json in elem['physicalist']:
 								res_dict['physical_disk_size'] += vm_json['total']
-					res_dict['size'] = res_dict['physical_disk_size']+res_dict['virtual_disk_size']	                
-				hostlist = applyfilter([],acronym,[],'',source =2)
+					res_dict['size'] += res_dict['physical_disk_size']+res_dict['virtual_disk_size']	                
+				hostlist = applyfilter(res_dict['hostidlist'],'',[],'',source =2)
 				if len(hostlist)>0 :
-					infini_res,total_grp_usage = get_infini(hostlist,limit)
+					infini_res,infini_usage = get_infini(hostlist,limit)
 					for key,res in infini_res.items():
-
 						for elem in res.get('disk_list'):
 							res_dict['physical_disk_size'] += elem['size']
 							res_dict['size'] += elem['size']
-				par3_hostlist = applyfilter([],acronym,[],'',source =3)
+				par3_hostlist = applyfilter(res_dict['hostidlist'],'',[],'',source =3)
 				if len(par3_hostlist) > 0 :
 					par3_result,par3_usage = get_3par(par3_hostlist)
 					for key,res in par3_result.items():
-
 						for elem in res.get('disk_list'):
 							res_dict['physical_disk_size'] += elem['size']
 							res_dict['size'] += elem['size']
@@ -210,10 +210,8 @@ class Dashboard(View):
 				cust_acronym = ''
 			hostidlist = []
 			vmgrpObj = JuiceGroupvm.objects.filter(groupid = custgrp)
-			print (custgrp)
 			for vm in vmgrpObj:
 				hostidlist.append(vm.vm)
-			print (hostidlist)
 			ovm_serverlist = get_ovm_serverlist()
 			infini_serverlist = get_infini_serverlist()
 			par3_serverlist = get_3par_serverlist()
@@ -329,8 +327,8 @@ class CustomerGroupList(View):
 			hostidlist = []
 			for vm in vmgroupobj:
 				hostidlist.append(vm.vm)
-			ovm_vmlist, infini_serverlist ,par3_serverlist= get_servernames('',hostidlist)
-			res_dict['vmlist'] =set( ovm_vmlist+infini_serverlist+par3_serverlist)
+			#ovm_vmlist, infini_serverlist ,par3_serverlist= get_servernames('',hostidlist)
+			res_dict['vmlist'] =set(hostidlist)# ovm_vmlist+infini_serverlist+par3_serverlist)
 			reslist.append(res_dict)
 		return render(request,'webapp/customer_grplist.html',{'active_user':active_user,'reslist':reslist,'pagination':pagination_res,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})
 
@@ -344,18 +342,16 @@ class CustomerGroup(View):
 		groupid = int(self.request.GET.get('groupid') or 0)
 		group_name = ''
 		group_acronym = ''
-		group_vmlist =self.request.GET.get('vmlist')  or ''
-		group_vmlist = group_vmlist.split(",")
+		group_vmlist =self.request.GET.getlist('vmlist')  or []
 		vmlist = []
 		error_msg = ''
 		try:
 			ovm_vmlist = []
 			infini_vmlist = []
-			for vm in vmdata:
-				ovm_vmlist.append(vm['id'])
+			ovm_vmlist = get_ovm_serverlist()
 			infini_vmlist = get_infini_serverlist()
 			par3_serverlist = get_3par_serverlist()
-			vmlist = ovm_vmlist+infini_vmlist+par3_serverlist
+			vmlist =set( ovm_vmlist+infini_vmlist+par3_serverlist)
 			if groupid:
 				groupobj = JuiceGroupnames.objects.filter(groupnameid = groupid)
 				for elem in groupobj:
@@ -400,6 +396,8 @@ class CustomerGroup(View):
 		except Exception as e:
 			error_msg = "Exception handled in Customer group creation form post"
 			print ("Customer Group Creation form post error - ",e)
-			for vm in vmdata:
-				vmlist.append(vm['id'])
+			ovm_vmlist = get_ovm_serverlist()
+			infini_vmlist = get_infini_serverlist()
+			par3_serverlist = get_3par_serverlist()
+			vmlist = set(ovm_vmlist+infini_vmlist+par3_serverlist)
 			return render(request,'webapp/customer_grp.html',{'active_user':active_user,'vmlist':vmlist.json(),'back_url':request.META.get('HTTP_REFERER') or '/webapp'})	

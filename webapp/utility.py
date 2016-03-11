@@ -88,13 +88,10 @@ def pagination(obj,limit,page=1):
         return pagination_res
 
 def applyfilter(hostidlist=[],cust_grp_acronym='',server = [],server_acronym='',source = 1):
-	#hostidlist1, hostidlist2, hostidlist3 = get_servernames('',hostidlist)
-	#print (hostidlist1,hostidlist2,hostidlist3)
 	hostlist = []
-	#server1,server2,server3  = get_servernames('',server)
 	if source ==1:
 		for vm in vmdata:
-			if len(hostidlist) > 0  and vm['id']['value'] in hostidlist and vm not in hostlist:
+			if len(hostidlist) > 0  and vm['id']['name'] in hostidlist and vm not in hostlist:
 				hostlist.append(vm)	
 			elif cust_grp_acronym != '' and  cust_grp_acronym.lower() in vm['id']['name'].lower() and vm not in hostlist:
 				hostlist.append(vm)
@@ -103,7 +100,7 @@ def applyfilter(hostidlist=[],cust_grp_acronym='',server = [],server_acronym='',
 				        hostlist.append(vm)
 	if source ==2:
 		for host in infini_host_data:#['result']:
-			if len(hostidlist) > 0  and str(host['id']) in hostidlist and host not in hostlist:
+			if len(hostidlist) > 0  and str(host['name']) in hostidlist and host not in hostlist:
                                 hostlist.append(host)
 
 			elif cust_grp_acronym != '' and cust_grp_acronym.lower() in host['name'].lower() and host not in hostlist:
@@ -118,7 +115,7 @@ def applyfilter(hostidlist=[],cust_grp_acronym='',server = [],server_acronym='',
 		tmp_list = []
 		for par3_host in par3Host_data :#['members']:
 			if 'name' in par3_host  and 'id' in par3_host:
-				if len(hostidlist) > 0 and str(par3_host['id']) in hostidlist and par3_host not in hostlist:
+				if len(hostidlist) > 0 and str(par3_host['name']) in hostidlist and par3_host not in hostlist:
 					hostlist.append(par3_host)
 				elif cust_grp_acronym != '' and cust_grp_acronym.lower() in par3_host['name'].lower() and par3_host not in hostlist:
 					hostlist.append(par3_host)
@@ -209,6 +206,7 @@ def get_ovm(vlist):
 						physical_dict['total'] = 0
 						if not any(substr in diskname.lower() for substr in exclude_list):
 							#for total vm size
+							total_usage += int(physical_disk_size) 
 							res_dict[servername]['total_size'] += int(physical_disk_size)
 							physical_dict['total'] += int(physical_disk_size)
 						physical_dict['repo_name'] = ""
@@ -230,12 +228,11 @@ def get_ovm(vlist):
 							virtual_dict['repo_name'] = virtualdiskObj['repositoryId']['name']
 						if not any(substr in diskname.lower() for substr in exclude_list):
 							#for total vm size
+							total_usage += int(virtual_disk_size) 
 							res_dict[servername]['total_size'] += int(virtual_disk_size)
 							virtual_dict['total'] += int(virtual_disk_size)
 						res_dict[servername]['virtualist'].append(virtual_dict)
-			total_usage  += res_dict[servername]['total_size']
 			res_dict[servername]['vm_name']= v['id']['name']
-
 			res_dict[servername]['disk_list']  = res_dict[servername]['virtualist']+res_dict[servername]['physicalist']
 	except Exception as e:
 		reslist = "Error in OVM calculation - "+str( e)

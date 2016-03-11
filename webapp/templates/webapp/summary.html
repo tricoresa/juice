@@ -45,10 +45,10 @@
 			{%for res in grp_list%}
 				<tr>
 			                <td>
-						 <form id = "vmreport_filter" class="form" role="form" action="/webapp/vmreport/" method="POST">
+						 <form id = "vmreport_filter{{res.groupid}}" class="form" role="form" action="/webapp/vmreport/" method="POST">
 						{% csrf_token %}
-							<a href="javascript:;" onclick="document.getElementById('vmreport_filter').submit();">{{res.groupname}}</a>
-							<input type="hidden" name="group" value={{res.groupid}} />
+							<a href="javascript:;" onclick="document.getElementById('vmreport_filter{{res.groupid}}').submit();">{{res.groupname}}</a>
+							<input type="hidden" name="group" value="{{res.groupid}}" />
 						</form>
 					</td>
 					<!--td>{{res.physical_name}}</td-->
@@ -67,7 +67,7 @@
 		<div class="form-group">
 			<span>Select Customer Group</span>
 			<!--input id="filterinput1" class="input-sm" placeholder="Search Customer Group" autocomplete="off"-->
-		        <select name="group" id = "filter_select1" class="input-sm" style="width:260px;">
+		        <select name="group_filter" id = "filter_select1" class="input-sm" style="width:260px;">
 				<option value="0" {%ifequal selected_grp 0%}selected=""{%endifequal%}>All</option>
 		                {%for grp in customergrouplist%}
                 		  <option value="{{grp.groupnameid}}" {%ifequal grp.groupnameid selected_grpid%}selected=""{%endifequal%}>{{grp.name}}</option>

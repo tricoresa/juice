@@ -42,9 +42,10 @@ def get_infini(hostlist,limit=1000):
                                                             vol_dict['id'] = volume['id']
                                                             size = bytesto(volume['size'],'g')
                                                             res_dict[host['name']]['total_size']+= size
+                                                            infini_total_usage += size
                                                             vol_dict['size'] = size
                                                             res_dict[host['name']]['disk_list'].append(vol_dict)
-                    infini_total_usage += res_dict[host['name']]['total_size']
+                    #infini_total_usage += res_dict[host['name']]['total_size']
         except Exception as e:
                 reslist = "Error in Infinibox calculation - "+str(e)
         return (res_dict,infini_total_usage)

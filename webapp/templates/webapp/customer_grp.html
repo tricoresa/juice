@@ -68,8 +68,9 @@
 <div class="form-group" id ='vm'>
         <span>Select VM/Servers to group : </span>
 	<select multiple id ="filter_select" style="vertical-align:middle;height:500px;">
+	{{selected_vmlist}}
         {%for vm in vmlist%}
-                 <option value={{vm.value}} name="{{vm.name}}" {%if vm.value in selected_vmlist%} selected="selected" {%endif%}>{{vm.name}}</option>
+                 <option value="{{vm}}" name="{{vm}}" {%if vm in selected_vmlist%} selected="selected" {%endif%}>{{vm}}</option>
         {%endfor%}
 	</select>
 
