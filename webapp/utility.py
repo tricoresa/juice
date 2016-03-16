@@ -87,6 +87,7 @@ def pagination(obj,limit,page=1):
                 pagination_res = paginator.page(paginator.num_pages)
         return pagination_res
 
+#------Module to apply the user defined filter of customer group or server/host name to get the specific Host(s) details -------#
 def applyfilter(hostidlist=[],cust_grp_acronym='',server = [],server_acronym='',source = 1):
 	hostlist = []
 	if source ==1:
@@ -126,7 +127,7 @@ def applyfilter(hostidlist=[],cust_grp_acronym='',server = [],server_acronym='',
 					hostlist.append(par3_host)
 	return  hostlist
 
-		
+#--------Module to get server/host names from all hosts across OVM/infini/3par/VMWare ------#
 def get_servernames(cust_grp = "",hostidlist = []):
 	ovm_vmlist = []
 	infini_serverlist = []

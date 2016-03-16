@@ -111,6 +111,7 @@ class Summary(View):
 
 		return render(request,'webapp/summary.html',{'active_user':active_user,'error_msg':error_msg,'grp_list':grp_list,'customergrouplist':customergrouplist,'selected_grpid':selected_grpid,'pagination':pagination_res,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})
 
+#----------------Module to export the VM/Disk report ---------------#
 class CSVExport(View):
 	def post(self,request):
 		if login_required(request.user):
@@ -167,7 +168,7 @@ class CSVExport(View):
 			])
 		return response
 		
-#----Dashboard is th VM report where Vm from OVM and disks from INfinibox are listed with respective repo name, disk name ,disk size
+#----Dashboard is th VM report where Vm from OVM and disks from INfinibox and 3par are listed with respective repo name, disk name ,disk size
 class Dashboard(View):
 	def get(self,request):
 		if login_required(request.user):

@@ -17,6 +17,11 @@ PAGE_SIZE =1000
 vol_baseUri = 'https://10.62.100.156//api/rest/volumes'
 host_baseUri='https://10.62.100.156//api/rest/hosts'
 
+vol_baseUri2 = 'https://10.62.100.174//api/rest/volumes'
+host_baseUri2='https://10.62.100.174//api/rest/hosts'
+
+vol_baseUri3 = 'https://10.66.100.85//api/rest/volumes'
+host_baseUri3='https://10.66.100.85//api/rest/hosts'
 
 celery = Celery('create_json', broker='amqp://guest@localhost//')
 @task()
@@ -57,15 +62,21 @@ def create_json():
 	host_list2=inf_session.get(host_baseUri2+"?page_size="+str(PAGE_SIZE))
 	host_list_json2=host_list2.json()
 
-	host_data = host_list_json['result']+host_list_json2['result']
+	host_list3=inf_session.get(host_baseUri3+"?page_size="+str(PAGE_SIZE))
+	host_list_json3=host_list3.json()
+
+	host_data = host_list_json['result']+host_list_json2['result']+host_list_json3['result']
 
 	volume_list = inf_session.get(vol_baseUri+"?page_size="+str(PAGE_SIZE))
 	volume_list_json = volume_list.json()
 
 	volume_list2 = inf_session.get(vol_baseUri2+"?page_size="+str(PAGE_SIZE))
 	volume_list_json2 = volume_list2.json()
+	
+	volume_list3 = inf_session.get(vol_baseUri3+"?page_size="+str(PAGE_SIZE))
+	volume_list_json3 = volume_list3.json()
 
-	volume_data = volume_list_json['result'] + volume_list_json2['result']
+	volume_data = volume_list_json['result'] + volume_list_json2['result']+volume_list_json3['result']
 	with open('JSON/infini_vol.json', 'w') as outfile:
 		json.dump(volume_data, outfile)
 
