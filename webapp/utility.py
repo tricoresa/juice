@@ -98,7 +98,7 @@ def applyfilter(hostidlist=[],cust_grp_acronym='',server = [],server_acronym='',
 				hostlist.append(vm)
 			if len(server) != 0 :
 				if vm['id']['name'] in server and vm not in hostlist:
-				        hostlist.append(vm)
+					hostlist.append(vm)
 	if source ==2:
 		for host in infini_host_data:#['result']:
 			if len(hostidlist) > 0  and str(host['name']) in hostidlist and host not in hostlist:
@@ -107,7 +107,7 @@ def applyfilter(hostidlist=[],cust_grp_acronym='',server = [],server_acronym='',
 			elif cust_grp_acronym != '' and cust_grp_acronym.lower() in host['name'].lower() and host not in hostlist:
 				hostlist.append(host)
 			if  len(server) != 0 :
-				if str(host['name']) in server:
+				if str(host['name']) in server and host not in hostlist:
 					 hostlist.append(host)
 			elif server_acronym != '' and server_acronym.lower() in host['name'].lower() and host not in hostlist:
 				hostlist.append(host)
@@ -121,7 +121,7 @@ def applyfilter(hostidlist=[],cust_grp_acronym='',server = [],server_acronym='',
 				elif cust_grp_acronym != '' and cust_grp_acronym.lower() in par3_host['name'].lower() and par3_host not in hostlist:
 					hostlist.append(par3_host)
 				if len(server) != 0:
-					if str(par3_host['name']) in server:
+					if str(par3_host['name']) in server and par3_host not in hostlist:
 						hostlist.append(par3_host)
 				elif server_acronym != '' and server_acronym.lower() in par3_host['name'].lower() and par3_host not in hostlist:
 					hostlist.append(par3_host)
@@ -166,7 +166,8 @@ def get_repo_detail(repoid):
 def get_ovm_serverlist():
 	ovm_serverlist = []
 	for vm in vmdata:
-		ovm_serverlist.append(vm['name'])
+		if 'name' in vm and vm['name']!= '':
+			ovm_serverlist.append(vm['name'])
 	return ovm_serverlist
 
 def get_ovm(vlist):
