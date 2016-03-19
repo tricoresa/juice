@@ -22,6 +22,7 @@ def get_infini_serverlist():
 def get_infini(hostlist,limit=1000):
         volume_list_json = infini_volume_data
         infini_total_usage = 0
+        error = ''
         res_dict = {}
         try:
                 if  len(hostlist) == 0:
@@ -47,6 +48,6 @@ def get_infini(hostlist,limit=1000):
                                                             res_dict[host['name']]['disk_list'].append(vol_dict)
                     #infini_total_usage += res_dict[host['name']]['total_size']
         except Exception as e:
-                reslist = "Error in Infinibox calculation - "+str(e)
-        return (res_dict,infini_total_usage)
+                error = "Error in Infinibox calculation - "+str(e)
+        return (res_dict,infini_total_usage,error)
 

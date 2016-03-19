@@ -41,6 +41,8 @@ with open('webapp/JSON/3par_vol.json') as data_file:
         par3Volume_data = json.load(data_file)
 with open('webapp/JSON/3par_vlun.json') as data_file:
         par3Vlun_data = json.load(data_file)
+with open('webapp/JSON/vmware.json') as data_file:
+        vmware_data = json.load(data_file)
 
 def bytesto(bytes, to, bsize=1024):
         unit = {'k' : 1, 'm': 2, 'g' : 3, 't' : 4, 'p' : 5, 'e' : 6 }
@@ -88,43 +90,55 @@ def pagination(obj,limit,page=1):
         return pagination_res
 
 #------Module to apply the user defined filter of customer group or server/host name to get the specific Host(s) details -------#
-def applyfilter(hostidlist=[],cust_grp_acronym='',server = [],server_acronym='',source = 1):
+def applyfilter(hostidlist=[],server = [],server_acronym='',source = 1):
 	hostlist = []
 	if source ==1:
 		for vm in vmdata:
 			if len(hostidlist) > 0  and vm['id']['name'] in hostidlist and vm not in hostlist:
 				hostlist.append(vm)	
-			elif cust_grp_acronym != '' and  cust_grp_acronym.lower() in vm['id']['name'].lower() and vm not in hostlist:
-				hostlist.append(vm)
+			#elif cust_grp_acronym != '' and  cust_grp_acronym.lower() in vm['id']['name'].lower() and vm not in hostlist:
+			#	hostlist.append(vm)
 			if len(server) != 0 :
 				if vm['id']['name'] in server and vm not in hostlist:
 					hostlist.append(vm)
+			if server_acronym != '' and server_acronym.lower() in vm['id']['name'].lower() and vm not in hostlist:
+				hostlist.append(vm)	
 	if source ==2:
 		for host in infini_host_data:#['result']:
 			if len(hostidlist) > 0  and str(host['name']) in hostidlist and host not in hostlist:
                                 hostlist.append(host)
 
-			elif cust_grp_acronym != '' and cust_grp_acronym.lower() in host['name'].lower() and host not in hostlist:
-				hostlist.append(host)
+			#elif cust_grp_acronym != '' and cust_grp_acronym.lower() in host['name'].lower() and host not in hostlist:
+			#	hostlist.append(host)
 			if  len(server) != 0 :
 				if str(host['name']) in server and host not in hostlist:
 					 hostlist.append(host)
-			elif server_acronym != '' and server_acronym.lower() in host['name'].lower() and host not in hostlist:
+			if server_acronym != '' and server_acronym.lower() in host['name'].lower() and host not in hostlist:
 				hostlist.append(host)
 			
 	if source ==3:
-		tmp_list = []
 		for par3_host in par3Host_data :#['members']:
 			if 'name' in par3_host  and 'id' in par3_host:
 				if len(hostidlist) > 0 and str(par3_host['name']) in hostidlist and par3_host not in hostlist:
 					hostlist.append(par3_host)
-				elif cust_grp_acronym != '' and cust_grp_acronym.lower() in par3_host['name'].lower() and par3_host not in hostlist:
-					hostlist.append(par3_host)
+				#elif cust_grp_acronym != '' and cust_grp_acronym.lower() in par3_host['name'].lower() and par3_host not in hostlist:
+				#	hostlist.append(par3_host)
 				if len(server) != 0:
 					if str(par3_host['name']) in server and par3_host not in hostlist:
 						hostlist.append(par3_host)
-				elif server_acronym != '' and server_acronym.lower() in par3_host['name'].lower() and par3_host not in hostlist:
+				if server_acronym != '' and server_acronym.lower() in par3_host['name'].lower() and par3_host not in hostlist:
 					hostlist.append(par3_host)
+	if source ==4:
+		for vmware in vmware_data:
+			if len(hostidlist) > 0 and vmware['hostname'] in hostidlist and vmware not in hostlist:
+				hostlist.append(vmware)
+			if len(server) != 0 :
+				if vmware['hostname'] in server and vmware not in hostlist:
+					hostlist.append(vmware)
+			if server_acronym != '' and server_acronym.lower() in vmware['hostname'].lower() and vmware not in hostlist:
+				hostlist.append(vmware)	
+	if len(hostlist) == 0:
+		hostlist = ['']
 	return  hostlist
 
 #--------Module to get server/host names from all hosts across OVM/infini/3par/VMWare ------#
@@ -172,6 +186,7 @@ def get_ovm_serverlist():
 
 def get_ovm(vlist):
 	total_usage= 0
+	error = ''
 	res_dict  = {}
 	try:
 		if len(vlist) == 0:
@@ -237,7 +252,7 @@ def get_ovm(vlist):
 			res_dict[servername]['vm_name']= v['id']['name']
 			res_dict[servername]['disk_list']  = res_dict[servername]['virtualist']+res_dict[servername]['physicalist']
 	except Exception as e:
-		reslist = "Error in OVM calculation - "+str( e)
-	return (res_dict,total_usage)
+		error  = "Error in OVM calculation - "+str( e)
+	return (res_dict,total_usage,error)
 
 

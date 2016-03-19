@@ -7,6 +7,7 @@ from django.utils.encoding import smart_str
 from webapp.utility import *
 from webapp.infinibox import *
 from webapp.par3 import *
+from webapp.vmware import *
 from django.views.generic.base import View
 from django.shortcuts import render,get_object_or_404,redirect
 
@@ -16,34 +17,43 @@ from django.shortcuts import render,get_object_or_404,redirect
 # ***************************************************
 
 #------ vm/disk report common module -------#
-def get_result_usage(source=1,hostidlist=[],cust_acronym='',server = [],server_acronym='',limit=0):
+def get_result_usage(source=1,hostidlist=[],server = [],server_acronym='',limit=0):
         result = []
         usage = 0
         if source ==1:
-                vlist  = applyfilter(hostidlist,cust_acronym,server,source=1)
+                vlist  = applyfilter(hostidlist,server,source=1)
                 if len(vlist)>0:
-                        result,usage  = get_ovm(vlist)
-                elif  cust_acronym == "" and len(server) == 0:
-                        result,usage = get_ovm([])
+                        result,usage,error  = get_ovm(vlist)
+                elif  len(server) == 0:
+                        result,usage,error = get_ovm([])
                 else:
-                        result,usage = {},0
+                        result,usage,error = {},0
         if source ==2:
-                hostlist  = applyfilter(hostidlist,cust_acronym,server,server_acronym,source=2)
+                hostlist  = applyfilter(hostidlist,server,server_acronym,source=2)
                 if len(hostlist)>0:
-                        result,usage = get_infini(hostlist,limit)
-                elif cust_acronym == "" and len(server) == 0 and server_acronym == '':
-                        result,usage = get_infini([],limit)
+                        result,usage,error = get_infini(hostlist,limit)
+                elif len(server) == 0 and server_acronym == '':
+                        result,usage,error = get_infini([],limit)
                 else:
-                        result,usage = {},0
+                        result,usage,error = {},0
         if source == 3:
-                par3_hostlist  = applyfilter(hostidlist,cust_acronym,server,source=3)
+                par3_hostlist  = applyfilter(hostidlist,server,source=3)
                 if len(par3_hostlist)>0: 
-                        result,usage = get_3par(par3_hostlist)
-                elif cust_acronym == "" and len(server) == 0:
-                        result,usage = get_3par([])
+                        result,usage,error = get_3par(par3_hostlist)
+                elif len(server) == 0:
+                        result,usage,error = get_3par([])
                 else:
-                        result,usage = {},0
-        return result,usage
+                        result,usage,error = {},0
+        if source == 4:
+                vmware_hostlist  = applyfilter(hostidlist,server,source=4)
+                if len(vmware_hostlist)>0 :
+                        result,usage,error = get_vmware(vmware_hostlist)
+                elif len(server) == 0:
+                        result,usage,error = get_vmware([])
+                else:
+                        result,usage,error = {},0
+
+        return result,usage,error
 	
 
 #---- Summary page lists out all the customer groups with the total disk usage.---#
@@ -79,7 +89,7 @@ class Summary(View):
 				grpDetailObj = JuiceGroupvm.objects.filter(groupid=customer.groupnameid)
 				for detail in grpDetailObj:
 					res_dict['hostidlist'].append(detail.vm)
-				vlist = applyfilter(res_dict['hostidlist'],'',[],'',source =1)
+				vlist = applyfilter(res_dict['hostidlist'],[],'',source =1)
 				if len(vlist) >  0:
 					ovm_res,ovm_usage = get_ovm(vlist)
 					for key, elem in ovm_res.items():
@@ -90,17 +100,24 @@ class Summary(View):
 							for vm_json in elem['physicalist']:
 								res_dict['physical_disk_size'] += vm_json['total']
 					res_dict['size'] += res_dict['physical_disk_size']+res_dict['virtual_disk_size']	                
-				hostlist = applyfilter(res_dict['hostidlist'],'',[],'',source =2)
+				hostlist = applyfilter(res_dict['hostidlist'],[],'',source =2)
 				if len(hostlist)>0 :
 					infini_res,infini_usage = get_infini(hostlist,limit)
 					for key,res in infini_res.items():
 						for elem in res.get('disk_list'):
 							res_dict['physical_disk_size'] += elem['size']
 							res_dict['size'] += elem['size']
-				par3_hostlist = applyfilter(res_dict['hostidlist'],'',[],'',source =3)
+				par3_hostlist = applyfilter(res_dict['hostidlist'],[],'',source =3)
 				if len(par3_hostlist) > 0 :
 					par3_result,par3_usage = get_3par(par3_hostlist)
 					for key,res in par3_result.items():
+						for elem in res.get('disk_list'):
+							res_dict['physical_disk_size'] += elem['size']
+							res_dict['size'] += elem['size']
+				vmware_hostlist = applyfilter(res_dict['hostidlist'],[],'',source = 4)
+				if len(vmware_hostlist) > 0:
+					vmware_result,vmware_usage = get_vmware(vmware_hostlist)
+					for key,res in vmware_result.items():
 						for elem in res.get('disk_list'):
 							res_dict['physical_disk_size'] += elem['size']
 							res_dict['size'] += elem['size']
@@ -182,9 +199,9 @@ class Dashboard(View):
 		ovm_serverlist = get_ovm_serverlist()
 		infini_serverlist = get_infini_serverlist()
 		par3_serverlist = get_3par_serverlist()
-		serverlist = ovm_serverlist + infini_serverlist + par3_serverlist
+		vmware_serverlist = get_vmware_serverlist()
+		serverlist = ovm_serverlist + infini_serverlist + par3_serverlist+vmware_serverlist
 		newserverlist = set(serverlist )
-		cust_acronym = ''
 		result = []
 		total_usage  = 0
 		return render(request,'webapp/dashboard.html',{'exclude_list':exclude_list,'reslist':result,'active_user':active_user,'source':source,'server':server,'serverlist':newserverlist,'cust_grp':custgrp,'customergrouplist':cust_grplist,'total_usage':total_usage,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})	
@@ -216,28 +233,34 @@ class Dashboard(View):
 			ovm_serverlist = get_ovm_serverlist()
 			infini_serverlist = get_infini_serverlist()
 			par3_serverlist = get_3par_serverlist()
-			serverlist = ovm_serverlist + infini_serverlist + par3_serverlist
+			vmware_serverlist = get_vmware_serverlist()
+			serverlist = ovm_serverlist + infini_serverlist + par3_serverlist + vmware_serverlist
 			newserverlist = set(serverlist)
 
 			if source == 0:
-				ovm_result,ovm_usage = get_result_usage(1,hostidlist,cust_acronym,server,server_acronym)
-				infini_result,infini_usage = get_result_usage(2,hostidlist,cust_acronym,server,server_acronym,limit)
-				par3_result,par3_usage = get_result_usage(3,hostidlist,cust_acronym,server,server_acronym)
+				ovm_result,ovm_usage,error = get_result_usage(1,hostidlist,server,server_acronym)
+				infini_result,infini_usage,error = get_result_usage(2,hostidlist,server,server_acronym,limit)
+				par3_result,par3_usage,error = get_result_usage(3,hostidlist,server,server_acronym)
+				vmware_result,vmware_usage,error = get_result_usage(4,hostidlist,server,server_acronym)
 				result.append(ovm_result)
 				result.append(infini_result)
 				result.append(par3_result)
-				total_usage = ovm_usage+infini_usage+par3_usage
+				result.append(vmware_result)
+				total_usage = ovm_usage+infini_usage+par3_usage+vmware_usage
 			if source ==1:
-				res,total_usage = get_result_usage(1,hostidlist,cust_acronym,server,server_acronym)
+				res,total_usage,error = get_result_usage(1,hostidlist,server,server_acronym)
 				result.append(res)
 			if source ==2:
-				res,total_usage = get_result_usage(2,hostidlist,cust_acronym,server,server_acronym)
+				res,total_usage,error = get_result_usage(2,hostidlist,server,server_acronym)
 				result.append(res)
 			if source == 3:
-				res,total_usage = get_result_usage(3,hostidlist,cust_acronym,server,server_acronym)
+				res,total_usage,error = get_result_usage(3,hostidlist,server,server_acronym)
 				result.append(res)
-			if 'Error'  in result:
-				error_notify = str(res)
+			if source ==4:
+				res,total_usage,error= get_result_usage(4,hostidlist,server,server_acronym)	
+				result.append(res)
+			if len(error)  > 0:
+				error_notify = str(error)
 			if len(result) == 0:
 				empty_notify = "No result matching the filters"
 		except Exception as e:
@@ -302,8 +325,8 @@ class CustomerGroupList(View):
 				hostidlist = []
 				for vm in vmgroupobj:
 					hostidlist.append(vm.vm)
-				ovm_vmlist, infini_serverlist ,par3_serverlist= get_servernames('',hostidlist)
-				res_dict['vmlist'] =set( ovm_vmlist+infini_serverlist+par3_serverlist)
+				#ovm_vmlist, infini_serverlist ,par3_serverlist= get_servernames('',hostidlist)
+				res_dict['vmlist'] =set(hostidlist)# ovm_vmlist+infini_serverlist+par3_serverlist)
 				reslist.append(res_dict)
 		except Exception as e:
 			print ("Customer Grouplist error - ",e)
@@ -352,7 +375,8 @@ class CustomerGroup(View):
 			ovm_vmlist = get_ovm_serverlist()
 			infini_vmlist = get_infini_serverlist()
 			par3_serverlist = get_3par_serverlist()
-			vmlist =set( ovm_vmlist+infini_vmlist+par3_serverlist)
+			vmware_serverlist = get_vmware_serverlist()
+			vmlist =set( ovm_vmlist+infini_vmlist+par3_serverlist+vmware_serverlist)
 			if groupid:
 				groupobj = JuiceGroupnames.objects.filter(groupnameid = groupid)
 				for elem in groupobj:
@@ -400,5 +424,6 @@ class CustomerGroup(View):
 			ovm_vmlist = get_ovm_serverlist()
 			infini_vmlist = get_infini_serverlist()
 			par3_serverlist = get_3par_serverlist()
-			vmlist = set(ovm_vmlist+infini_vmlist+par3_serverlist)
+			vmware_serverlist = get_vmware_serverlist()
+			vmlist = set(ovm_vmlist+infini_vmlist+par3_serverlist+vmware_serverlist)
 			return render(request,'webapp/customer_grp.html',{'active_user':active_user,'vmlist':vmlist.json(),'back_url':request.META.get('HTTP_REFERER') or '/webapp'})	

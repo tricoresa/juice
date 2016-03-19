@@ -2,6 +2,7 @@ import pprint,json
 from webapp.utility import bytesto,par3Host_data,par3Volume_data,par3Vlun_data
 def get_3par(hostlist):
 	total_usage = 0
+	error = ''
 	serverlist = []
 	res_dict = {}
 	if len(hostlist)== 0:
@@ -30,8 +31,8 @@ def get_3par(hostlist):
 				res_dict[server['name']]['disk_list'].append(vol_dict)
 			#total_usage += res_dict[server['name']]['total_size']
 	except Exception as e:
-		reslist= "Error occured in 3par calculation- "+str(e)
-	return res_dict, total_usage
+		error = "Error occured in 3par calculation- "+str(e)
+	return res_dict, total_usage, error
 
 def get_3par_serverlist():
 	hostnamelist = []	 

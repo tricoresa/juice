@@ -149,3 +149,47 @@ def create_json():
 	    json.dump(vluns, outfile)
 	cl.logout()
 	cl2.logout()
+
+	#Saving VMware data for 10.62.100.15
+	from pyVim.connect import SmartConnect, Disconnect
+	from pyVmomi import vim, vmodl
+	import argparse
+	import atexit
+	import getpass
+	import ssl
+
+	"""
+	Simple command-line program for listing the virtual machines on a system.
+	"""
+	context = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
+	context.verify_mode = ssl.CERT_NONE
+	si = SmartConnect(host='10.62.100.15',#'chdcvcent01.tricoresolutions.com'
+                     user='svc-juice',
+                     pwd='bnDhPNavNs@^64Y-',
+                     port=int(443),
+                     sslContext=context)
+	content = si.RetrieveContent()
+	result = []
+	objview = content.viewManager.CreateContainerView(content.rootFolder,[vim.HostSystem],True)
+	esxi_hosts = objview.view
+	objview.Destroy()
+	for esxi_host in esxi_hosts:
+		res_dict = {}
+		res_dict['hostname'] = esxi_host.name
+		res_dict['vmwareDisk'] = []
+
+		storage_system = esxi_host.configManager.storageSystem
+		host_file_sys_vol_mount_info = storage_system.fileSystemVolumeInfo.mountInfo
+		for host_mount_info in host_file_sys_vol_mount_info:
+			if host_mount_info.volume.type == "VMFS":
+				datastore_dict = {}
+				datastore_dict['reponame'] = host_mount_info.volume.name
+				extents = host_mount_info.volume.extent
+				for extent in extents:
+					datastore_dict['reponame'] = host_mount_info.volume.name
+					datastore_dict['disk']  = extent.diskName
+					datastore_dict['capacity'] = host_mount_info.volume.capacity
+				res_dict['vmwareDisk'].append(datastore_dict)
+		result.append(res_dict)
+	with open('webapp/JSON/vmware.json', 'w') as outfile:
+		json.dump(result, outfile)
