@@ -21,37 +21,37 @@ def get_result_usage(source=1,hostidlist=[],server = [],server_acronym='',limit=
         result = []
         usage = 0
         if source ==1:
-                vlist  = applyfilter(hostidlist,server,source=1)
+                vlist  = applyfilter(hostidlist,server,server_acronym,source=1)
                 if len(vlist)>0:
                         result,usage,error  = get_ovm(vlist)
-                elif  len(server) == 0:
+                elif  len(server) == 0  and len(hostidlist) == 0 and server_acronym == '':
                         result,usage,error = get_ovm([])
                 else:
-                        result,usage,error = {},0
+                        result,usage,error = {},0,''
         if source ==2:
                 hostlist  = applyfilter(hostidlist,server,server_acronym,source=2)
                 if len(hostlist)>0:
                         result,usage,error = get_infini(hostlist,limit)
-                elif len(server) == 0 and server_acronym == '':
+                elif len(server) == 0 and len(hostidlist) == 0 and server_acronym == '':
                         result,usage,error = get_infini([],limit)
                 else:
-                        result,usage,error = {},0
+                        result,usage,error = {},0,''
         if source == 3:
-                par3_hostlist  = applyfilter(hostidlist,server,source=3)
+                par3_hostlist  = applyfilter(hostidlist,server,server_acronym,source=3)
                 if len(par3_hostlist)>0: 
                         result,usage,error = get_3par(par3_hostlist)
-                elif len(server) == 0:
+                elif len(server) == 0 and len(hostidlist) == 0 and server_acronym == '':
                         result,usage,error = get_3par([])
                 else:
-                        result,usage,error = {},0
+                        result,usage,error = {},0,''
         if source == 4:
-                vmware_hostlist  = applyfilter(hostidlist,server,source=4)
+                vmware_hostlist  = applyfilter(hostidlist,server,server_acronym,source=4)
                 if len(vmware_hostlist)>0 :
                         result,usage,error = get_vmware(vmware_hostlist)
-                elif len(server) == 0:
+                elif len(server) == 0 and len(hostidlist) == 0 and server_acronym == '':
                         result,usage,error = get_vmware([])
                 else:
-                        result,usage,error = {},0
+                        result,usage,error = {},0,''
 
         return result,usage,error
 	
@@ -140,7 +140,6 @@ class CSVExport(View):
 		writer = csv.writer(response, csv.excel)
 		response.write(u'\ufeff'.encode('utf8')) # BOM (optional...Excel needs it to open UTF-8 file properly)
 		writer.writerow([
-			smart_str('Type'),
 			smart_str('VM Name'),
 			smart_str('Server Name'),
 			smart_str('Repo Name'),
@@ -150,32 +149,18 @@ class CSVExport(View):
 		])
 		result = []
 		for res in reslist:
-			if res.get('virtualist') or res.get('physicalist'):
-				tmp_list = res.get('virtualist') or res.get('physicalist')
-				for disk in tmp_list:
+			for key,val in res.items():
+				for disk in val['disk_list']:
 					res_dict = {}
-					res_dict ['type'] = 'OVM'
 					res_dict['repo'] = disk.get('repo_name')
 					res_dict['diskid'] = disk.get('id')
 					res_dict['diskname'] = disk.get('name')
 					res_dict['disksize'] = disk.get('size')
-					res_dict['vm'] = res.get('vmname')
-					res_dict['servername'] = res.get('servername')
-					result.append(res_dict)
-			else:
-				for disk in res['disk_list']:
-					res_dict = {}
-					res_dict['type'] = "Infinibox"
-					res_dict['repo'] = ''
-					res_dict['diskid'] = disk.get('id')
-					res_dict['diskname'] = disk.get('name')
-					res_dict['disksize'] = disk.get('size')
-					res_dict['vm'] = ''
-					res_dict['servername'] =  res.get('servername')
+					res_dict['vm'] = val.get('vm_name')
+					res_dict['servername'] = key
 					result.append(res_dict)
 		for obj in result:
 			writer.writerow([
-				smart_str(obj['type']),
 				smart_str(obj['vm']),
 				smart_str(obj['servername']),
 				smart_str(obj['repo']),

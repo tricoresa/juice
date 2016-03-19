@@ -137,8 +137,6 @@ def applyfilter(hostidlist=[],server = [],server_acronym='',source = 1):
 					hostlist.append(vmware)
 			if server_acronym != '' and server_acronym.lower() in vmware['hostname'].lower() and vmware not in hostlist:
 				hostlist.append(vmware)	
-	if len(hostlist) == 0:
-		hostlist = ['']
 	return  hostlist
 
 #--------Module to get server/host names from all hosts across OVM/infini/3par/VMWare ------#
@@ -191,7 +189,6 @@ def get_ovm(vlist):
 	try:
 		if len(vlist) == 0:
 			vlist = [vm  for  vm in vmdata]
-
 		for v in vlist:
 			serverId = v['serverId']
 			if not serverId:

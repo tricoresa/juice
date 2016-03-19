@@ -8,7 +8,7 @@ def get_vmware_serverlist():
 	for host  in vmware_data:
 		hostnamelist.append(host['hostname'])
 	return hostnamelist
-def get_vmware(hostlist =[]):
+def get_vmware(hostlist):
 	res_dict = {}
 	error = ''
 	vmware_total_usage = 0
