@@ -187,7 +187,7 @@ def create_json():
 				extents = host_mount_info.volume.extent
 				for extent in extents:
 					datastore_dict['reponame'] = host_mount_info.volume.name
-					datastore_dict['disk']  = extent.diskName
+					datastore_dict['disk']  = host_mount_info.volume.uuid #extent.diskName
 					datastore_dict['capacity'] = host_mount_info.volume.capacity
 				res_dict['vmwareDisk'].append(datastore_dict)
 		result.append(res_dict)

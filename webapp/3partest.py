@@ -17,8 +17,14 @@ cl2.login(username, password)
 volumes2 = cl2.getVolumes()['members']
 hosts2 = cl2.getHosts()['members']
 
-volume_data = volumes1+volumes2
-host_data = hosts1+hosts2
+host3 = '10.62.100.117'
+cl3 = client.HP3ParClient("https://%s:8080/api/v1" % host2)
+cl3.login(username, password)
+volumes3 = cl2.getVolumes()['members']
+hosts3 = cl2.getHosts()['members']
+
+volume_data = volumes1+volumes2+volumes3
+host_data = hosts1+hosts2+hosts3
 for host in hosts1:
         try:
             vluns += cl.getHostVLUNs(host['name'])
@@ -29,7 +35,11 @@ for host in hosts2:
             vluns += cl2.getHostVLUNs(host['name'])
         except:
             pass
-
+for host in hosts3:
+	try:
+		vluns += cl3.getHostVLUNs(host['name'])
+	except:
+		pass
 with open('JSON/3par_vol.json', 'w') as outfile:
         json.dump(volume_data, outfile)
 with open('JSON/3par_host.json', 'w') as outfile:

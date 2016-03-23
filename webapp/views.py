@@ -91,7 +91,7 @@ class Summary(View):
 					res_dict['hostidlist'].append(detail.vm)
 				vlist = applyfilter(res_dict['hostidlist'],[],'',source =1)
 				if len(vlist) >  0:
-					ovm_res,ovm_usage = get_ovm(vlist)
+					ovm_res,ovm_usage,error = get_ovm(vlist)
 					for key, elem in ovm_res.items():
 						if len(elem.get('virtualist')) > 0 :
 							for vm_json in elem['virtualist']:
@@ -102,21 +102,21 @@ class Summary(View):
 					res_dict['size'] += res_dict['physical_disk_size']+res_dict['virtual_disk_size']	                
 				hostlist = applyfilter(res_dict['hostidlist'],[],'',source =2)
 				if len(hostlist)>0 :
-					infini_res,infini_usage = get_infini(hostlist,limit)
+					infini_res,infini_usage,error = get_infini(hostlist,limit)
 					for key,res in infini_res.items():
 						for elem in res.get('disk_list'):
 							res_dict['physical_disk_size'] += elem['size']
 							res_dict['size'] += elem['size']
 				par3_hostlist = applyfilter(res_dict['hostidlist'],[],'',source =3)
 				if len(par3_hostlist) > 0 :
-					par3_result,par3_usage = get_3par(par3_hostlist)
+					par3_result,par3_usage,error = get_3par(par3_hostlist)
 					for key,res in par3_result.items():
 						for elem in res.get('disk_list'):
 							res_dict['physical_disk_size'] += elem['size']
 							res_dict['size'] += elem['size']
 				vmware_hostlist = applyfilter(res_dict['hostidlist'],[],'',source = 4)
 				if len(vmware_hostlist) > 0:
-					vmware_result,vmware_usage = get_vmware(vmware_hostlist)
+					vmware_result,vmware_usage,error= get_vmware(vmware_hostlist)
 					for key,res in vmware_result.items():
 						for elem in res.get('disk_list'):
 							res_dict['physical_disk_size'] += elem['size']
