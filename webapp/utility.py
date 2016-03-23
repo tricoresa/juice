@@ -1,7 +1,7 @@
 # ------All the utility functions related to OVM and User authentication are avilable here 
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-import sys,certifi
+import sys,certifi,math
 import requests,json
 requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = 'ALL'#'RC4-SHA'
 
@@ -49,7 +49,7 @@ def bytesto(bytes, to, bsize=1024):
         result = float(bytes)
         for i in range(unit[to]):
                 result = result / bsize
-        return(result)
+        return(math.ceil(result))
 
 session=requests.Session()
 session.verify= False #disables SSL certificate verification
