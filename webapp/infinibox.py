@@ -34,7 +34,6 @@ def get_unmapped_infini():
 					reslist.append(vol_dict)		
 	except  Exception as e:
 		error = "Error in Infinibox calculation - "+str(e)
-	print ('Infinibox - ', len(reslist))
 	return (reslist,error)
 
 #---- Given the HOST and Volume list object, it calculates the disk names, disk ids and size of disk for each host  ----# 

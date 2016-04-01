@@ -18,7 +18,6 @@ def get_unmapped_3par():
 				reslist.append(vol_dict)
 	except Exception as e:
 		error = str(e)
-	print ('3par - ',len(reslist))
 	return reslist,error
 				
 def get_3par(hostlist):

@@ -25,7 +25,6 @@ def get_unmapped_vmware():
 					reslist.append(disk_dict)
 	except Exception as  e:
 		error = "Error in VMware calculation - "+str(e)
-	print (reslist)
 	return (reslist,error)
 	
 		
