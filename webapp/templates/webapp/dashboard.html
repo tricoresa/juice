@@ -91,6 +91,7 @@ $(function ()
        </ul>
        <table class='table table-bordered table-hover table-striped' style="table-layout: fixed; word-wrap: break-word;">
          <tr class="text-center">
+	   <th>Source</th>
            <th>Repo Name</th>
            <th>Disk Id</th>
            <th>Disk Name</td>
@@ -99,6 +100,7 @@ $(function ()
          {%for elem  in res.disk_list %}
 	  <tr  {%for discard_str in exclude_list%}{%if discard_str in elem.name|lower%} class="warning" {%endif%}{%endfor%}
 	       {%if '.img'  in elem.name|lower%} class="info"{%endif%} style="text-align:center"> 
+             <td>{{elem.source}}</td>
              <td>{{elem.repo_name}}</td>
              <td>{{elem.id}}</td>
              <td>{{elem.name}}</td>

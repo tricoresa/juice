@@ -18,6 +18,25 @@ def get_infini_serverlist():
 			hostnamelist.append(name)
 	return hostnamelist
 
+# ------ Listing the unmapped disks in infinibox ---- #
+def get_unmapped_infini():
+	volume_list_json = infini_volume_data
+	error = ''
+	reslist = []
+	try:
+			for volume in volume_list_json:	
+				vol_dict = {}
+				if volume['mapped'] == False:
+					vol_dict['name'] = volume['name']
+					vol_dict['id'] = volume['id']
+					size = bytesto(volume['size'],'g')
+					vol_dict['size'] = size
+					reslist.append(vol_dict)		
+	except  Exception as e:
+		error = "Error in Infinibox calculation - "+str(e)
+	print ('Infinibox - ', len(reslist))
+	return (reslist,error)
+
 #---- Given the HOST and Volume list object, it calculates the disk names, disk ids and size of disk for each host  ----# 
 def get_infini(hostlist,limit=1000):
         volume_list_json = infini_volume_data
@@ -41,6 +60,7 @@ def get_infini(hostlist,limit=1000):
                                                     if lun['volume_id'] == volume['id']:
                                                             vol_dict['name'] = volume['name']
                                                             vol_dict['id'] = volume['id']
+                                                            vol_dict['source'] = 'Infinibox'
                                                             size = bytesto(volume['size'],'g')
                                                             res_dict[host['name']]['total_size']+= size
                                                             infini_total_usage += size

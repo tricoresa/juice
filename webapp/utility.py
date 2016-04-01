@@ -49,7 +49,7 @@ def bytesto(bytes, to, bsize=1024):
         result = float(bytes)
         for i in range(unit[to]):
                 result = result / bsize
-        return(math.ceil(result))
+        return (math.ceil(result))
 
 session=requests.Session()
 session.verify= False #disables SSL certificate verification
@@ -130,12 +130,12 @@ def applyfilter(hostidlist=[],server = [],server_acronym='',source = 1):
 					hostlist.append(par3_host)
 	if source ==4:
 		for vmware in vmware_data:
-			if len(hostidlist) > 0 and vmware['hostname'] in hostidlist and vmware not in hostlist:
+			if len(hostidlist) > 0 and vmware['vmname'] in hostidlist and vmware not in hostlist:
 				hostlist.append(vmware)
 			if len(server) != 0 :
-				if vmware['hostname'] in server and vmware not in hostlist:
+				if vmware['vmname'] in server and vmware not in hostlist:
 					hostlist.append(vmware)
-			if server_acronym != '' and server_acronym.lower() in vmware['hostname'].lower() and vmware not in hostlist:
+			if server_acronym != '' and server_acronym.lower() in vmware['vmname'].lower() and vmware not in hostlist:
 				hostlist.append(vmware)	
 	return  hostlist
 
@@ -208,6 +208,7 @@ def get_ovm(vlist):
 						diskname =  disk.get('storageElementId').get('name') if disk.get('storageElementId').get('name') else 'None'
 						physical_dict = {}
 						physical_dict['name'] = diskname
+						physical_dict['source'] = 'OVM'
 						physicaldisk_id = disk.get('storageElementId').get('value')
 						physical_dict['id'] = physicaldisk_id
 
@@ -229,6 +230,7 @@ def get_ovm(vlist):
 						diskname = disk.get('virtualDiskId').get('name') if disk.get('virtualDiskId').get('name') else 'None'
 						virtual_dict = {}
 						virtual_dict['name'] = diskname
+						virtual_dict['source'] = 'OVM'
 						virtualdisk_id = disk.get('virtualDiskId').get('value')
 						virtual_dict['id'] = virtualdisk_id
 						virtual_dict['total'] = 0

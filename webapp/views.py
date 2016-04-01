@@ -54,7 +54,23 @@ def get_result_usage(source=1,hostidlist=[],server = [],server_acronym='',limit=
                         result,usage,error = {},0,''
 
         return result,usage,error
-	
+
+class UnmappedDisk(View):	
+	def get(self,request):
+		if login_required(request.user):
+			return redirect('/webapp/login?next='+request.path)
+		res_list = []
+		error_msg = ''
+		active_user = get_user_grp(request.user)
+		#ovm_disk_list,error = get_unmapped_ovm()
+		infini_disk_list,error_msg = get_unmapped_infini()
+		par3_disk_list,error = get_unmapped_3par()
+		vmware_disk_list,error_msg= get_unmapped_vmware()
+		#res_list.append(ovm_disk_list)
+		res_list.append(infini_disk_list)
+		res_list.append(par3_disk_list)
+		res_list.append(vmware_disk_list)
+		return render(request,'webapp/unmapped.html',{'active_user':active_user,'error_msg':error_msg,'res_list':res_list,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})		
 
 #---- Summary page lists out all the customer groups with the total disk usage.---#
 class Summary(View):
@@ -73,7 +89,7 @@ class Summary(View):
 		else:
 			groupObj = JuiceGroupnames.objects.all().order_by('name')
 		page = int(self.request.GET.get('page') or 1)
-		limit =int(self.request.GET.get('limit') or 10)
+		limit =int(self.request.GET.get('limit') or 20)
 		pagination_res = pagination(groupObj,limit,page)
 		
 		try:
