@@ -4,11 +4,14 @@ def get_unmapped_3par():
 	error = ''
 	reslist = []
 	try:
+		vol_list = []
 		vlun_wwnlist = []
 		for vl in par3Vlun_data:
-			vlun_wwnlist.append(vl['volumeWWN'])
+			if vl['volumeWWN'] not in vlun_wwnlist:
+				vlun_wwnlist.append(vl['volumeWWN'])
 		for vol in par3Volume_data:
-			if vol['wwn'] not in  vlun_wwnlist:
+			if vol['wwn'] not in  vlun_wwnlist and vol['wwn'] not in vol_list:
+				vol_list.append(vol['wwn'])
 				vol_dict = {}
 				vol_dict['id'] = vol['id']
 				vol_dict['name'] = vol['name']

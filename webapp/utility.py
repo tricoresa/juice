@@ -181,6 +181,28 @@ def get_ovm_serverlist():
 		if 'name' in vm and vm['name']!= '':
 			ovm_serverlist.append(vm['name'])
 	return ovm_serverlist
+def get_unmapped_ovm():
+	reslist = []
+	error = ''
+	try:
+		for virtual in virtualdiskdata:
+			res_dict = {}
+			if virtual['vmDiskMappingIds'] == []:
+				res_dict['name'] = virtual['name']
+				res_dict['id'] = virtual['id']['value']
+				res_dict['size']= bytesto(virtual['size'],'g')
+				reslist.append(res_dict)
+		for storage in storagelemdata:
+			res_dict = {}
+			if storage['vmDiskMappingIds'] == []:
+				res_dict['name'] = storage['name']
+				res_dict['id'] = storage['id']['value']
+				res_dict['size']= bytesto(storage['size'],'g')
+				reslist.append(res_dict)
+	except  Exception as e:
+		error = "Error in OVM calculation - "+str(e)
+
+	return (reslist,error)
 
 def get_ovm(vlist):
 	total_usage= 0

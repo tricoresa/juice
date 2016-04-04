@@ -59,17 +59,19 @@ class UnmappedDisk(View):
 	def get(self,request):
 		if login_required(request.user):
 			return redirect('/webapp/login?next='+request.path)
-		res_list = []
 		error_msg = ''
+		res_dict = {}
+		res_list = []
 		active_user = get_user_grp(request.user)
-		#ovm_disk_list,error = get_unmapped_ovm()
+		ovm_disk_list,error = get_unmapped_ovm()
+		res_dict['OVM'] = ovm_disk_list
 		infini_disk_list,error_msg = get_unmapped_infini()
+		res_dict ['infinibox'] = infini_disk_list
 		par3_disk_list,error = get_unmapped_3par()
+		res_dict['par3'] = par3_disk_list
 		vmware_disk_list,error_msg= get_unmapped_vmware()
-		#res_list.append(ovm_disk_list)
-		res_list.append(infini_disk_list)
-		res_list.append(par3_disk_list)
-		res_list.append(vmware_disk_list)
+		res_dict['vmware'] = vmware_disk_list
+		res_list.append(res_dict)
 		return render(request,'webapp/unmapped.html',{'active_user':active_user,'error_msg':error_msg,'res_list':res_list,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})		
 
 #---- Summary page lists out all the customer groups with the total disk usage.---#

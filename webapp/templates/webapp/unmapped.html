@@ -17,34 +17,28 @@
  <div class="row">
   <div class="col-sm-9">
     {%if error_msg == ''%}
-    {% for item in res_list %}
-        {% for key, res in item.items %}
-	{% if res.count > 0 %}
-        <ul>
-        <li><h5><u>{{res.vm_name}}</u> (server- <b>{{key}}</b>)</h5>  Total Disk size = {{res.total_size}}</li>
-       </ul>
-       <table class='table table-bordered table-hover table-striped' style="table-layout: fixed; word-wrap: break-word;">
-         <tr class="text-center">
-           <th>Repo Name</th>
-           <th>Disk Id</th>
-           <th>Disk Name</td>
-           <th>Disk Size</th>
-         </tr>
-         {%for elem  in res.disk_list %}
+       {%for res  in res_list %}
+	{%for key,value in res.items%}
+        	<ul><b>{{key}}</b></ul>
+	       <table class='table table-bordered table-hover table-striped' style="table-layout: fixed; word-wrap: break-word;">
+        	 <tr class="text-center">
+	           <th>Disk Name</th>
+        	   <th>Disk Id</th>
+	           <th>Disk Size</th>
+        	 </tr>
+         {%for elem  in value %}
           <tr  {%for discard_str in exclude_list%}{%if discard_str in elem.name|lower%} class="warning" {%endif%}{%endfor%}
                {%if '.img'  in elem.name|lower%} class="info"{%endif%} style="text-align:center">
-             <td>{{elem.repo_name}}</td>
-             <td>{{elem.id}}</td>
 	     <td>{{elem.name}}</td>
+             <td>{{elem.id}}</td>
              <td>{{elem.size}}</td>
            </tr>
         {%endfor%}
        </table>
+	{%endfor%}
+      {%endfor%}
       {%endif%}
 
-     {%endfor%}
-   {%endfor%}
-    {%endif%}
    <p style="background-color: #F3D2D8;">{{error_notify}}</p>
    </div>
 </div>
