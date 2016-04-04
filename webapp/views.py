@@ -137,8 +137,8 @@ class Summary(View):
 					vmware_result,vmware_usage,error= get_vmware(vmware_hostlist)
 					for key,res in vmware_result.items():
 						for elem in res.get('disk_list'):
-							res_dict['physical_disk_size'] += elem['size']
-							res_dict['size'] += elem['size']
+							res_dict['virtual_disk_size'] += elem['size']
+					res_dict['size'] = res_dict['virtual_disk_size']
 				grp_list.append(res_dict)
 		except Exception as e:
 			error_msg = "Exception handled in Summary module - ",e
