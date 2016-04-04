@@ -20,7 +20,7 @@ def get_unmapped_vmware():
 					disk_dict = {}
 					disk_dict['repo_name'] = details['reponame']
 					disk_dict['name'] = details['disk']
-					size = bytesto(details['capacity'],'g')
+					size = details['capacity']
 					disk_dict['size'] = size
 					reslist.append(disk_dict)
 	except Exception as  e:
@@ -46,7 +46,7 @@ def get_vmware(vmlist):
 					disk_dict['repo_name'] = detail['reponame']
 					disk_dict['name'] = detail['disk']
 					disk_dict['source'] =  'VMware'
-					size = bytesto(detail['capacity'],'g')
+					size = detail['capacity']
 					disk_dict['size'] = size
 					res_dict[vm['vmname']]['total_size'] += size
 					res_dict[vm['vmname']]['disk_list'].append(disk_dict)

@@ -175,28 +175,21 @@ def create_json():
                      sslContext=context)
 	content = si.RetrieveContent()
 	result = []
-	objview = content.viewManager.CreateContainerView(content.rootFolder,[vim.HostSystem],True)
-	esxi_hosts = objview.view
-	objview.Destroy()
-	for esxi_host in esxi_hosts:
-		res_dict = {}
-		res_dict['hostname'] = esxi_host.name
-		res_dict['vmwareDisk'] = []
-
-		storage_system = esxi_host.configManager.storageSystem
-		host_file_sys_vol_mount_info = storage_system.fileSystemVolumeInfo.mountInfo
-		for host_mount_info in host_file_sys_vol_mount_info:
-			if host_mount_info.volume.type == "VMFS":
-				datastore_dict = {}
-				datastore_dict['reponame'] = host_mount_info.volume.name
-				mounted = host_mount_info.mountInfo.mounted
-				extents = host_mount_info.volume.extent
-				for extent in extents:
-					datastore_dict['mounted'] = mounted
-					datastore_dict['reponame'] = host_mount_info.volume.name
-					datastore_dict['disk']  = host_mount_info.volume.uuid #extent.diskName
-					datastore_dict['capacity'] = host_mount_info.volume.capacity
-				res_dict['vmwareDisk'].append(datastore_dict)
-		result.append(res_dict)
+	objview = content.viewManager.CreateContainerView(content.rootFolder,[vim.VirtualMachine],True)
+	for vm in objview.view:
+		repo_dict = {}
+		repo_dict['vmname'] = vm.config.name
+		repo_dict['vmware_disklist'] = []
+		hardware = vm.config.hardware
+		for each_vm_hardware in hardware.device:
+			if (each_vm_hardware.key >= 2000) and (each_vm_hardware.key < 3000):
+				tmp_dict = {}
+				reponame = each_vm_hardware.backing.fileName.split(']')[0]
+				tmp_dict['reponame'] = reponame[1:]
+				disk = each_vm_hardware.backing.fileName.split('/')[1]
+				tmp_dict['disk'] = disk
+				tmp_dict['capacity'] = each_vm_hardware.capacityInKB/1024/1024
+				repo_dict['vmware_disklist'].append(tmp_dict)
+		result.append(repo_dict)
 	with open('webapp/JSON/vmware.json', 'w') as outfile:
 		json.dump(result, outfile)
