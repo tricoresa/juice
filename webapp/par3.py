@@ -36,15 +36,16 @@ def get_3par(hostlist):
 	try:
 		for server in hostlist:
 			if 'name' in server:
-				if server['name'] not in res_dict:
-					res_dict[server['name']] = {}
-					res_dict[server['name']]['volume_list'] = []
-					res_dict[server['name']]['total_size'] = 0
-					res_dict[server['name']]['disk_list'] = []
 				vlunlist = []
 				for vlun in par3Vlun_data:
 					if 'hostname' in vlun and vlun['hostname'] == server['name'] and vlun['volumeName'] not in vlunlist:
 						vlunlist.append(vlun['volumeName'])
+				if len(vlunlist) > 0:
+					if server['name'] not in res_dict:
+						res_dict[server['name']] = {}
+						res_dict[server['name']]['volume_list'] = []
+						res_dict[server['name']]['total_size'] = 0
+						res_dict[server['name']]['disk_list'] = []	
 				for vl in vlunlist:
 					for vol in par3Volume_data: #['members']:
 						if vl == vol['name'] and vol['name'] not in res_dict[server['name']]['volume_list']:

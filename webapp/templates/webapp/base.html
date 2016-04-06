@@ -1,6 +1,7 @@
 {% extends 'webapp/bootstrap.html' %}
 
 {% load bootstrap3 %}
+{% load static %}
 {% block bootstrap3_content %}
 <div class="container">
 	<div class="pull-right">{%if request.user.is_anonymous%}<a href="/webapp/login">Login</a>{%else%} Hello {{request.user}}{%endif%} | <a href="/webapp/logout">Logout</a> | 
@@ -11,7 +12,7 @@
 		<input type="hidden" value=1 name='direct'/>
 	</form>
 	</div>
-        <h1> <a href="/webapp">{% block title %}Django-Juice Web App{% endblock %}</a></h1>
+        <h1> <a href="/webapp"><img src="{% static "juice_logo.png" %}" width=150px></a></h1>
 	<script src="{% bootstrap_jquery_url %}"></script>
 	<script type="text/javascript">
 	$(function () 

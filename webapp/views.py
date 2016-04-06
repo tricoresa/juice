@@ -272,7 +272,7 @@ class CustomerGroupList(View):
 		delete_grp = int(self.request.POST.get('delete_grp') or 0)
 		delete_grpid = self.request.POST.getlist('check[]') or []
 		page = int(self.request.POST.get('page') or 1)
-		limit =int(self.request.POST.get('limit') or 10)
+		limit =int(self.request.POST.get('limit') or 20)
 		try:
 			if delete_grp == 1:
 				for grpid in delete_grpid:
@@ -305,7 +305,7 @@ class CustomerGroupList(View):
 		active_user = get_user_grp(request.user)
 		groupObj = JuiceGroupnames.objects.all().order_by('name')
 		page = int(self.request.GET.get('page') or 1)
-		limit =int(self.request.GET.get('limit') or 10)
+		limit =int(self.request.GET.get('limit') or 20)
 		pagination_res = pagination(groupObj,limit,page)
 		for customer in pagination_res:
 			res_dict =  {}

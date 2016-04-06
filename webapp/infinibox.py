@@ -46,11 +46,11 @@ def get_infini(hostlist,limit=1000):
                 if  len(hostlist) == 0:
                         hostlist = infini_host_data #['result']
                 for host in hostlist:
-                    if 'name' in host and host['name'] not in res_dict:
-                        res_dict[ host['name']] = {}
-                        res_dict[host['name']]['total_size'] = 0
-                        res_dict[host['name']]['disk_list'] = []
                     if 'luns' in host:
+                        if 'name' in host and host['name'] not in res_dict:
+                            res_dict[ host['name']] = {}
+                            res_dict[host['name']]['total_size'] = 0
+                            res_dict[host['name']]['disk_list'] = []
                         luns=host['luns']
                         for lun in luns:
                             for volume in volume_list_json: #['result']:
