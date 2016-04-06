@@ -90,52 +90,20 @@ def pagination(obj,limit,page=1):
         return pagination_res
 
 #------Module to apply the user defined filter of customer group or server/host name to get the specific Host(s) details -------#
-def applyfilter(hostidlist=[],server = [],server_acronym='',source = 1):
+def applyfilter(cust_acronym_list=[]):
 	hostlist = []
-	if source ==1:
+	for cust_grp_acronym in cust_acronym_list:
 		for vm in vmdata:
-			if len(hostidlist) > 0  and vm['id']['name'] in hostidlist and vm not in hostlist:
-				hostlist.append(vm)	
-			#elif cust_grp_acronym != '' and  cust_grp_acronym.lower() in vm['id']['name'].lower() and vm not in hostlist:
-			#	hostlist.append(vm)
-			if len(server) != 0 :
-				if vm['id']['name'] in server and vm not in hostlist:
-					hostlist.append(vm)
-			if server_acronym != '' and server_acronym.lower() in vm['id']['name'].lower() and vm not in hostlist:
-				hostlist.append(vm)	
-	if source ==2:
+			if cust_grp_acronym != '' and  cust_grp_acronym.lower() in vm['id']['name'].lower() and vm not in hostlist:
+				hostlist.append(vm)
 		for host in infini_host_data:#['result']:
-			if len(hostidlist) > 0  and str(host['name']) in hostidlist and host not in hostlist:
-                                hostlist.append(host)
-
-			#elif cust_grp_acronym != '' and cust_grp_acronym.lower() in host['name'].lower() and host not in hostlist:
-			#	hostlist.append(host)
-			if  len(server) != 0 :
-				if str(host['name']) in server and host not in hostlist:
-					 hostlist.append(host)
-			if server_acronym != '' and server_acronym.lower() in host['name'].lower() and host not in hostlist:
+			if cust_grp_acronym != '' and cust_grp_acronym.lower() in host['name'].lower() and host not in hostlist:
 				hostlist.append(host)
-			
-	if source ==3:
 		for par3_host in par3Host_data :#['members']:
-			if 'name' in par3_host  and 'id' in par3_host:
-				if len(hostidlist) > 0 and str(par3_host['name']) in hostidlist and par3_host not in hostlist:
-					hostlist.append(par3_host)
-				#elif cust_grp_acronym != '' and cust_grp_acronym.lower() in par3_host['name'].lower() and par3_host not in hostlist:
-				#	hostlist.append(par3_host)
-				if len(server) != 0:
-					if str(par3_host['name']) in server and par3_host not in hostlist:
-						hostlist.append(par3_host)
-				if server_acronym != '' and server_acronym.lower() in par3_host['name'].lower() and par3_host not in hostlist:
-					hostlist.append(par3_host)
-	if source ==4:
+			if 'name' in par3_host and  cust_grp_acronym != '' and cust_grp_acronym.lower() in par3_host['name'].lower() and par3_host not in hostlist:
+				hostlist.append(par3_host)
 		for vmware in vmware_data:
-			if len(hostidlist) > 0 and vmware['vmname'] in hostidlist and vmware not in hostlist:
-				hostlist.append(vmware)
-			if len(server) != 0 :
-				if vmware['vmname'] in server and vmware not in hostlist:
-					hostlist.append(vmware)
-			if server_acronym != '' and server_acronym.lower() in vmware['vmname'].lower() and vmware not in hostlist:
+			if cust_grp_acronym != '' and cust_grp_acronym.lower() in vmware['vmname'].lower() and vmware not in hostlist:
 				hostlist.append(vmware)	
 	return  hostlist
 
@@ -175,12 +143,15 @@ def get_repo_detail(repoid):
 	res_dict['usedsize'] = bytesto(usedsize,'g')
 	return res_dict
 
+# ---------List of all the unique VMs in OVM -------------- #
 def get_ovm_serverlist():
 	ovm_serverlist = []
 	for vm in vmdata:
 		if 'name' in vm and vm['name']!= '':
 			ovm_serverlist.append(vm['name'])
 	return ovm_serverlist
+
+# ------------- List of unmapped VM in OVM ----------- #
 def get_unmapped_ovm():
 	reslist = []
 	error = ''
@@ -204,6 +175,7 @@ def get_unmapped_ovm():
 
 	return (reslist,error)
 
+# -------------Get VM from OVM and its respective Virtual and physical disks/repo details on the basis of selected VMs ------ #
 def get_ovm(vlist):
 	total_usage= 0
 	error = ''
@@ -212,7 +184,7 @@ def get_ovm(vlist):
 		if len(vlist) == 0:
 			vlist = [vm  for  vm in vmdata]
 		for v in vlist:
-			serverId = v['serverId']
+			serverId = v.get('serverId')
 			if not serverId:
 				continue;
 			servername = serverId.get('name') if serverId else 'None'

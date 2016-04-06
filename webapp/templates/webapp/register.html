@@ -13,7 +13,7 @@ $(document).ready(function() {
       <div>
         <ol class="breadcrumb">
           <li class="active">{%if id%}<a href= '/webapp/register'>Register New User </a>{%else%}Register New User{%endif%}</li>
-            <li><a href="{{back_url}}" title="back to previous page">Back</a></li>
+            <!--li><a href="{{back_url}}" title="back to previous page">Back</a></li-->
                 {% if error%}
                 <p style="color:red;">{{error}}</p>
                 {%endif%}
@@ -24,7 +24,13 @@ $(document).ready(function() {
 
 <div class ="col-xs-9 col-lg-10">
 {% if not error%}
-        {%if id%}<a href = "/webapp/password/{{id}}"><b>Edit password</b></a>{%endif%}
+        {%if id%}
+	<form role="form" action="/webapp/password/" method="POST">
+                {% csrf_token %}
+                <a href='#' onclick="$(this).closest('form').submit()">Edit Password</a>
+                <input type="hidden" value={{id}} name='userid'/>
+        </form>
+	{%endif%}
         <form action={%if id%}"/webapp/register/{{id}}/"{%else%}"/webapp/register/"{%endif%} method = 'post'>{%csrf_token%}
         {{form.as_ul}}
         <!--input type  = 'submit' class="btn-btn-primary" {%if id%} value='Update' {%else%}value='Register'{%endif%}/-->

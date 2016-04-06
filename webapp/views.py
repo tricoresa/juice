@@ -17,44 +17,36 @@ from django.shortcuts import render,get_object_or_404,redirect
 # ***************************************************
 
 #------ vm/disk report common module -------#
-def get_result_usage(source=1,hostidlist=[],server = [],server_acronym='',limit=0):
+def get_result_usage(cust_acronym=[]):
         result = []
         usage = 0
-        if source ==1:
-                vlist  = applyfilter(hostidlist,server,server_acronym,source=1)
-                if len(vlist)>0:
-                        result,usage,error  = get_ovm(vlist)
-                elif  len(server) == 0  and len(hostidlist) == 0 and server_acronym == '':
-                        result,usage,error = get_ovm([])
-                else:
-                        result,usage,error = {},0,''
-        if source ==2:
-                hostlist  = applyfilter(hostidlist,server,server_acronym,source=2)
-                if len(hostlist)>0:
-                        result,usage,error = get_infini(hostlist,limit)
-                elif len(server) == 0 and len(hostidlist) == 0 and server_acronym == '':
-                        result,usage,error = get_infini([],limit)
-                else:
-                        result,usage,error = {},0,''
-        if source == 3:
-                par3_hostlist  = applyfilter(hostidlist,server,server_acronym,source=3)
-                if len(par3_hostlist)>0: 
-                        result,usage,error = get_3par(par3_hostlist)
-                elif len(server) == 0 and len(hostidlist) == 0 and server_acronym == '':
-                        result,usage,error = get_3par([])
-                else:
-                        result,usage,error = {},0,''
-        if source == 4:
-                vmware_hostlist  = applyfilter(hostidlist,server,server_acronym,source=4)
-                if len(vmware_hostlist)>0 :
-                        result,usage,error = get_vmware(vmware_hostlist)
-                elif len(server) == 0 and len(hostidlist) == 0 and server_acronym == '':
-                        result,usage,error = get_vmware([])
-                else:
-                        result,usage,error = {},0,''
+        error = []
+        hostlist  = applyfilter(cust_acronym)
+        if len(hostlist)>0:
+            infini_result,infini_usage,infini_error = get_infini(hostlist)
+            ovm_result,ovm_usage,ovm_error = get_ovm(hostlist)
+            vmware_result,vmware_usage,vmware_error = get_vmware(hostlist)
+            par3_result,par3_usage,par3_error = get_3par(hostlist)
+            result.append(ovm_result)
+            result.append(infini_result)
+            result.append(par3_result)
+            result.append(vmware_result)
 
+            usage = ovm_usage+infini_usage+par3_usage+vmware_usage
+
+            if len(ovm_error) > 0:
+                 error.append(ovm_error) 
+            if len(infini_error) > 0:
+                error.append(infini_error)
+            if len(par3_error)>0:
+                error.append(par3_error)
+            if len(vmware_error)>0:
+                error.append(vmware_error)
+        else:
+            result,usage,error = {},0,''
         return result,usage,error
 
+# ------ Module for unmapped Disks and VM listing  --------#
 class UnmappedDisk(View):	
 	def get(self,request):
 		if login_required(request.user):
@@ -96,6 +88,7 @@ class Summary(View):
 		
 		try:
 			for customer in pagination_res:
+				cust_acronym = []
 				res_dict =  {}
 				res_dict['hostidlist'] = []	
 				res_dict['physical_disk_size'] = 0
@@ -104,11 +97,10 @@ class Summary(View):
 				total_grp_usage = 0
 				res_dict['groupname']  = customer.name
 				res_dict['groupid'] = customer.groupnameid
-				grpDetailObj = JuiceGroupvm.objects.filter(groupid=customer.groupnameid)
-				for detail in grpDetailObj:
-					res_dict['hostidlist'].append(detail.vm)
-				vlist = applyfilter(res_dict['hostidlist'],[],'',source =1)
+				cust_acronym.append( customer.acronym)
+				vlist = applyfilter(cust_acronym)
 				if len(vlist) >  0:
+					# ------- Processing OVM result
 					ovm_res,ovm_usage,error = get_ovm(vlist)
 					for key, elem in ovm_res.items():
 						if len(elem.get('virtualist')) > 0 :
@@ -117,28 +109,26 @@ class Summary(View):
 						if len(elem.get('physicalist')) > 0:
 							for vm_json in elem['physicalist']:
 								res_dict['physical_disk_size'] += vm_json['total']
-					res_dict['size'] += res_dict['physical_disk_size']+res_dict['virtual_disk_size']	                
-				hostlist = applyfilter(res_dict['hostidlist'],[],'',source =2)
-				if len(hostlist)>0 :
-					infini_res,infini_usage,error = get_infini(hostlist,limit)
+					# ------------- Processing Infini result
+					infini_res,infini_usage,error = get_infini(vlist,limit)
 					for key,res in infini_res.items():
 						for elem in res.get('disk_list'):
 							res_dict['physical_disk_size'] += elem['size']
 							res_dict['size'] += elem['size']
-				par3_hostlist = applyfilter(res_dict['hostidlist'],[],'',source =3)
-				if len(par3_hostlist) > 0 :
-					par3_result,par3_usage,error = get_3par(par3_hostlist)
+					
+					# ------------ Processing par3 result
+					par3_result,par3_usage,error = get_3par(vlist)
 					for key,res in par3_result.items():
 						for elem in res.get('disk_list'):
 							res_dict['physical_disk_size'] += elem['size']
 							res_dict['size'] += elem['size']
-				vmware_hostlist = applyfilter(res_dict['hostidlist'],[],'',source = 4)
-				if len(vmware_hostlist) > 0:
-					vmware_result,vmware_usage,error= get_vmware(vmware_hostlist)
+					
+					# ---------- Processing vmware result
+					vmware_result,vmware_usage,error= get_vmware(vlist)
 					for key,res in vmware_result.items():
 						for elem in res.get('disk_list'):
 							res_dict['virtual_disk_size'] += elem['size']
-					res_dict['size'] = res_dict['virtual_disk_size']
+					res_dict['size'] = res_dict['virtual_disk_size']+res_dict['physical_disk_size']
 				grp_list.append(res_dict)
 		except Exception as e:
 			error_msg = "Exception handled in Summary module - ",e
@@ -194,10 +184,7 @@ class Dashboard(View):
 		if login_required(request.user):
 			return redirect('/webapp/login?next='+request.path)
 		active_user = get_user_grp(request.user)	
-		source = int(self.request.GET.get('source') or 0)
-		server = self.request.GET.getlist('server') or []
 		custgrp = int(self.request.GET.get('group') or 0)
-		limit = 0
 		cust_grplist = JuiceGroupnames.objects.all().order_by('name')
 		ovm_serverlist = get_ovm_serverlist()
 		infini_serverlist = get_infini_serverlist()
@@ -207,32 +194,26 @@ class Dashboard(View):
 		newserverlist = set(serverlist )
 		result = []
 		total_usage  = 0
-		return render(request,'webapp/dashboard.html',{'exclude_list':exclude_list,'reslist':result,'active_user':active_user,'source':source,'server':server,'serverlist':newserverlist,'cust_grp':custgrp,'customergrouplist':cust_grplist,'total_usage':total_usage,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})	
+		return render(request,'webapp/dashboard.html',{'exclude_list':exclude_list,'error_notify':'','reslist':result,'active_user':active_user,'serverlist':newserverlist,'cust_grp':custgrp,'customergrouplist':cust_grplist,'total_usage':total_usage,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})	
 	def post(self,request):
 
 		if login_required(request.user):
 			return redirect('/webapp/login?next='+request.path)
 		active_user = get_user_grp(request.user)
-		source = int(self.request.POST.get('source') or 0)
 		custgrp = int(self.request.POST.get('group') or 0)
-		server = self.request.POST.getlist('server') or []
-		server_acronym = self.request.POST.get('server_acronym') or ''
-		limit = 0#int(self.request.POST.get('limit') or 0)
 		cust_grplist = JuiceGroupnames.objects.all().order_by('name')
 		result=[]
 		total_usage = 0
 		error_notify = ''
 		empty_notify  = ''
 		newserverlist = []
+		cust_acronym = []
 		try:
 			if custgrp > 0:
-				cust_acronym = JuiceGroupnames.objects.get(groupnameid = custgrp).acronym 
+				cust_acronym .append(JuiceGroupnames.objects.get(groupnameid = custgrp).acronym )
 			else:
-				cust_acronym = ''
+				cust_acronym = JuiceGroupnames.objects.all().values_list('acronym',flat=True)
 			hostidlist = []
-			vmgrpObj = JuiceGroupvm.objects.filter(groupid = custgrp)
-			for vm in vmgrpObj:
-				hostidlist.append(vm.vm)
 			ovm_serverlist = get_ovm_serverlist()
 			infini_serverlist = get_infini_serverlist()
 			par3_serverlist = get_3par_serverlist()
@@ -240,35 +221,15 @@ class Dashboard(View):
 			serverlist = ovm_serverlist + infini_serverlist + par3_serverlist + vmware_serverlist
 			newserverlist = set(serverlist)
 
-			if source == 0:
-				ovm_result,ovm_usage,error = get_result_usage(1,hostidlist,server,server_acronym)
-				infini_result,infini_usage,error = get_result_usage(2,hostidlist,server,server_acronym,limit)
-				par3_result,par3_usage,error = get_result_usage(3,hostidlist,server,server_acronym)
-				vmware_result,vmware_usage,error = get_result_usage(4,hostidlist,server,server_acronym)
-				result.append(ovm_result)
-				result.append(infini_result)
-				result.append(par3_result)
-				result.append(vmware_result)
-				total_usage = ovm_usage+infini_usage+par3_usage+vmware_usage
-			if source ==1:
-				res,total_usage,error = get_result_usage(1,hostidlist,server,server_acronym)
-				result.append(res)
-			if source ==2:
-				res,total_usage,error = get_result_usage(2,hostidlist,server,server_acronym)
-				result.append(res)
-			if source == 3:
-				res,total_usage,error = get_result_usage(3,hostidlist,server,server_acronym)
-				result.append(res)
-			if source ==4:
-				res,total_usage,error= get_result_usage(4,hostidlist,server,server_acronym)	
-				result.append(res)
+			result,usage,error = get_result_usage(cust_acronym)
+			total_usage = usage
 			if len(error)  > 0:
 				error_notify = str(error)
 			if len(result) == 0:
 				empty_notify = "No result matching the filters"
 		except Exception as e:
 			error_notify = "Error in Report caluclation - "+str(e)
-		return render(request,'webapp/dashboard.html',{'error_notify':error_notify,'empty_notify':empty_notify,'exclude_list':exclude_list,'reslist':result,'active_user':active_user,'limit':limit,'source':source,'server':server,'serverlist':newserverlist,'cust_grp':custgrp,'customergrouplist':cust_grplist,'total_usage':total_usage,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})
+		return render(request,'webapp/dashboard.html',{'error_notify':error_notify,'empty_notify':empty_notify,'exclude_list':exclude_list,'reslist':result,'active_user':active_user,'serverlist':newserverlist,'cust_grp':custgrp,'customergrouplist':cust_grplist,'total_usage':total_usage,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})
 
 	
 	

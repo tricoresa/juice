@@ -3,7 +3,7 @@
 {% load bootstrap3 %}
 
 {%block extrahead%}
-<script type="text/javascript">	
+<!--script type="text/javascript">	
 $(function ()
         {
 
@@ -56,7 +56,7 @@ $(function ()
 	}
 
 });
-</script>
+</script-->
 {%endblock%}
 {% block content %}
 <div class="container-fluid">
@@ -75,7 +75,6 @@ $(function ()
  <div class="row">
   <div class="col-sm-9">
 
-    <h4>Total disk usage =  {{total_usage}} </h4>
     <div class="pull-right">
 	<form id = "csvexport" class="form" role="form" action="/webapp/csvexport/" method="POST">	
 		{% csrf_token %}
@@ -84,6 +83,7 @@ $(function ()
 	</form>
     </div>
     {%if error_notify == ''%}
+    <h4>Total disk usage =  {{total_usage}} </h4>
     {% for item in reslist %}
 	{% for key, res in item.items %}
       <ul> 
@@ -110,8 +110,8 @@ $(function ()
        </table>
      {%endfor%}
      {%empty%}
-        <p style="background-color: #F3D2D8;">{{empty_notify}}</p>
-         <p class="text-danger">PLEASE SELECT THE SOURCE DEPENDENT FILTERS TO VIEW THE VM/DISK REPORT FOR OVM/INFINIBOX/3PAR</p>
+         <p style="background-color: #F3D2D8;">{{empty_notify}}</p>
+         <p class="text-danger">PLEASE SELECT THE CUSTOMER GROUP FILTER TO VIEW THE VM/DISK REPORT FOR OVM/INFINIBOX/3PAR/VMware.<br/> 'All' CUSTOMER GROUP FILTER MAY TAKE A LITTLE WHILE TO PROCESS</p>
    {%endfor%}
     {%endif%}
    <p style="background-color: #F3D2D8;">{{error_notify}}</p>
@@ -121,7 +121,7 @@ $(function ()
 	{% csrf_token %}
          <label>Filters</label>
 	
-	<div class="form-group">
+	<!--div class="form-group">
            <span>Select Source</span>
            <select name="source" id = 'sourceid' onchange="this.form.submit()" class="input-sm" style="width:260px;">
 		<option value="0" {%ifequal source 0%}selected=""{%endifequal%}>All</option>
@@ -130,12 +130,11 @@ $(function ()
 		<option value="3" {%ifequal source 3%}selected=""{%endifequal%}>3Par</option>
 		<option value="4" {%ifequal source 4%}selected=""{%endifequal%}>VMware</option>
            </select>
-         </div>
+         </div -->
 	
 	<div class="form-group">
            <span>Select Customer Group</span>
 
-	   <!--input id="filterinput1" name="grp_filter" class="input-sm" placeholder="Search Customer Group" autocmplete="off"-->
            <select name="group" id = "filter_select1" onchange="this.form.submit()" class="input-sm" style="width:260px;">
                 <option value="0" {%ifequal cust_grp 0%}selected=""{%endifequal%}>All</option>
                 {%for grp in customergrouplist%}
@@ -144,7 +143,7 @@ $(function ()
            </select>
          </div>
 		
-	<div class="form-group">
+	<!--div class="form-group">
            <span>Select Server  /  </span><a href= "javascript:;" id = "clear_server" >Clear server</a>
 	   <input type="text" name="server_acronym" id = "filterinput2" class="input-sm" placeholder="Search Server/VM" autocomplete="off"> 
 		{%if  not active_user = 3 %}	<a href= "" target="_blank" id = "savegrp" >Save group</a> {%endif%}
@@ -155,7 +154,7 @@ $(function ()
                 {%endfor%}
            </select>
          </div>
-	<!--div  id='limit' class="form-group">
+	<div  id='limit' class="form-group">
            <span>Number of Records</span>
            <select name="limit" id= "selectLimit" class="input-sm" style="width:260px;">
 		<option value="0" {%ifequal limit 0 %}selected=""{%endifequal%}>All</option>
@@ -164,11 +163,11 @@ $(function ()
 		<option value="50" {%ifequal limit 50 %}selected=""{%endifequal%}>50</option>
 		<option value="100" {%ifequal limit 100 %}selected=""{%endifequal%}>100</option>
            </select>
-         </div>
+         </div-->
 	{% buttons %}
 		<button type="submit" class="btn btn-primary"> Apply</button>
                 <button type="reset" class="btn" onClick = "location.href='/webapp/vmreport'">Reset</button>
-        {% endbuttons %}-->
+        {% endbuttons %}
 	</form>
    </div>
   </div>

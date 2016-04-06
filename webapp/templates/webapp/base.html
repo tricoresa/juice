@@ -3,7 +3,14 @@
 {% load bootstrap3 %}
 {% block bootstrap3_content %}
 <div class="container">
-	<div class="pull-right">{%if request.user.is_anonymous%}<a href="/webapp/login">Login</a>{%else%} Hello {{request.user}}{%endif%} | <a href="/webapp/logout">Logout</a></div>
+	<div class="pull-right">{%if request.user.is_anonymous%}<a href="/webapp/login">Login</a>{%else%} Hello {{request.user}}{%endif%} | <a href="/webapp/logout">Logout</a> | 
+	<form role="form" action="/webapp/password/" method="POST">
+		{% csrf_token %}
+		<a href='#' onclick="$(this).closest('form').submit()">Change Password</a>
+		<input type="hidden" value={{request.user.id}} name='userid'/>
+		<input type="hidden" value=1 name='direct'/>
+	</form>
+	</div>
         <h1> <a href="/webapp">{% block title %}Django-Juice Web App{% endblock %}</a></h1>
 	<script src="{% bootstrap_jquery_url %}"></script>
 	<script type="text/javascript">
@@ -39,16 +46,17 @@
 	{%if not request.user.is_anonymous%}
 	<nav class="navbar navbar-default">
 	    <div class="container-fluid">
-
 		<!-- Collect the nav links, forms, and other content for toggling -->
 		    <div class="collapse navbar-collapse" id="navbar-collapse-1">
 		      <ul class="nav navbar-nav nav-tabs">
         		<li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Reports <span class="caret"></span></a>
 	                <ul class="dropdown-menu">
                 	        <li><a href="/webapp/vmreport">VM and Disk Report</a></li>
+				{%if  not active_user = 3 %}
 				<li><a href="/webapp/unmapped_disk">Unmapped Disks/VMs Report</a></li>
 				<li><a href="/webapp/repositoryreport">OVM Repository Report</a></li>
-				<li><a href="/webapp/userlist">User List</a></li>	
+				<li><a href="/webapp/userlist">User List</a></li>
+				{%endif%}
 	                </ul>
 			</li>
 

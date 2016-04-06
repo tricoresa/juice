@@ -10,8 +10,8 @@
       <div>
         <ol class="breadcrumb">
           <li class="active">Summary</li>
-            <li><a href="{{back_url}}" title="back to previous page">Back</a></li>
-	    <li class="text-danger">{{error_msg}}</li>
+            <!--li><a href="{{back_url}}" title="back to previous page">Back</a></li-->
+	    {%if error_msg != ''%} <li class="text-danger">{{error_msg}}</li>{%endif%}
         </ol>
       </div> 
       <div class="col-xs-4">

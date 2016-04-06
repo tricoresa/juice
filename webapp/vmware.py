@@ -2,14 +2,14 @@
 import requests,math
 from webapp.utility import vmware_data,bytesto
 
-# ------VMware Host List ---- #
+# ------VMware unique VM  List ---- #
 def get_vmware_serverlist():
 	vmnamelist = []
 	for host  in vmware_data:
 		vmnamelist.append(host['vmname'])
 	return vmnamelist
 
-
+# ------ List of unmapped virtual machines------ #
 def get_unmapped_vmware():
 	reslist = []
 	error = ''
@@ -27,7 +27,7 @@ def get_unmapped_vmware():
 		error = "Error in VMware calculation - "+str(e)
 	return (reslist,error)
 	
-		
+# ---- List out the VM and its disk/repo details on the basis of selected list of VMs ---- #		
 def get_vmware(vmlist):
 	res_dict = {}
 	error = ''
@@ -36,7 +36,7 @@ def get_vmware(vmlist):
 		if len(vmlist) == 0:
 			vmlist = vmware_data # [vmware for vmware in vmware_data]
 		for vm in vmlist:
-			if vm['vmname'] not in res_dict:
+			if 'vmname' in vm and vm['vmname'] not in res_dict:
 				res_dict[vm['vmname']] = {}
 				res_dict[vm['vmname']]['VMware'] = 1
 				res_dict[vm['vmname']]['vmhost'] = vm['vmhost']

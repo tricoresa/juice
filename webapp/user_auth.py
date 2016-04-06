@@ -88,12 +88,12 @@ class Login(View):
         def post(self,request):
                 username = request.POST.get('username','')
                 password = request.POST.get('password','')
-                next = request.POST.get('next','/webapp') or request.META.get('HTTP_REFERER')
-                if next == "":
-                        next =  '/webapp'
+                #next = request.POST.get('next','/webapp') or request.META.get('HTTP_REFERER')
+                #if next == "":
+                next =  '/webapp'
                 user  =auth.authenticate(username=username,password=password)
                 if user is not None:
-                        auth.login(request,user)
+                        auth.login(request,user) 
                         return redirect(next)
                 else:
                         return render(request,'webapp/login.html',{'next':next,'error':'Your login credentials are invalid. Try Again!'})
@@ -104,34 +104,40 @@ def logout(request):
 
 # ------- Form to facilitate User password editing ---- #
 class PasswordEdit(View):
-        def get(self,request,id=None):
-                instance = User.objects.get(id=id) if id  else None
+        def post(self,request):
+                active_user = get_user_grp(request.user)
+                userid = int(request.POST.get('userid') or 0)
+                direct = int(request.POST.get('direct') or 0)
+                update = int(request.POST.get('update') or 0)
+                instance = User.objects.get(id=userid) 
                 if instance:
+                    if update == 1:
+                        errorlist = []
+                        form  = PasswordChangeForm(user = instance,data=request.POST)
+                        if form.is_valid():
+                            form.save()
+                            if instance == request.user:
+                                return redirect('/webapp/logout')
+                            return redirect('/webapp/userlist?success=1')
+                        else:
+                            errorlist.append( form.errors)
+                            url = '/webapp/password/'  
+                            return render(request,'webapp/password.html',{'active_user':active_user,'error':errorlist,'back_url':url,'id':userid,'update':1,'direct':direct})
+
+                    else:
                         args = {}
                         args.update(csrf(request))
-                        args['form'] = MyRegistrationForm(instance=instance)
                         args['form'] = PasswordChangeForm(user = instance)
-                        args['id']=id
-                        args['url'] = "/webapp/register/"+str(id)
+                        args['id']=userid
+                        args['direct'] = direct
+                        args['update'] = update
+                        args['back_url'] = "/webapp/register/"+str(userid) if direct == 0 else '/webapp'
+                        args['active_user'] = active_user
                         return render(request,'webapp/password.html',args)
                 else:
                         errorlist = ['Not Authorized for this action']
                         return render(request,'webapp/userlist.html',{'error':errorlist})
 
-        def post(self,request,id=None):
-                instance = User.objects.get(id=id) if id  else None
-                errorlist = []
-                form  = PasswordChangeForm(user = instance,data=request.POST)
-                if form.is_valid():
-                        form.save()
-                        if instance == request.user:
-                            return redirect('/webapp/logout')
-			
-                        return redirect('/webapp/userlist?success=1')
-                else:
-                        errorlist.append( form.errors)
-                        url = '/webapp/password' if id == None else '/webapp/password/'+str(id)
-                        return render(request,'webapp/password.html',{'error':errorlist,'url':url})
 class DeleteUser(View):
         def post(self,request):
                 errorlist = []

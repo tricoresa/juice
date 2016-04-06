@@ -18,7 +18,7 @@ def get_infini_serverlist():
 			hostnamelist.append(name)
 	return hostnamelist
 
-# ------ Listing the unmapped disks in infinibox ---- #
+# ------ Listing the unmapped volumes in infinibox ---- #
 def get_unmapped_infini():
 	volume_list_json = infini_volume_data
 	error = ''
@@ -46,16 +46,17 @@ def get_infini(hostlist,limit=1000):
                 if  len(hostlist) == 0:
                         hostlist = infini_host_data #['result']
                 for host in hostlist:
-                    if host['name'] not in res_dict:
+                    if 'name' in host and host['name'] not in res_dict:
                         res_dict[ host['name']] = {}
                         res_dict[host['name']]['total_size'] = 0
                         res_dict[host['name']]['disk_list'] = []
-                    luns=host['luns']
-                    for lun in luns:
+                    if 'luns' in host:
+                        luns=host['luns']
+                        for lun in luns:
                             for volume in volume_list_json: #['result']:
                                    vol_dict = {}
                                    if volume['type'].upper() == 'MASTER':
-                                            if volume['mapped'] == True:
+                                            if volume['mapped'] == True: 
                                                     if lun['volume_id'] == volume['id']:
                                                             vol_dict['name'] = volume['name']
                                                             vol_dict['id'] = volume['id']

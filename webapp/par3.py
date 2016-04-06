@@ -1,5 +1,7 @@
 import pprint,json
 from webapp.utility import bytesto,par3Host_data,par3Volume_data,par3Vlun_data
+
+# -----Get list of unmapped 3 Par volumes ----#
 def get_unmapped_3par():
 	error = ''
 	reslist = []
@@ -22,7 +24,8 @@ def get_unmapped_3par():
 	except Exception as e:
 		error = str(e)
 	return reslist,error
-				
+
+# ------ List of 3par volumes and respective luns on the basis of selected list of 3par hosts ----- #				
 def get_3par(hostlist):
 	total_usage = 0
 	error = ''
@@ -61,6 +64,7 @@ def get_3par(hostlist):
 		error = "Error occured in 3par calculation- "+str(e)
 	return res_dict, total_usage, error
 
+# ------List of 3par Hosts ---------- #
 def get_3par_serverlist():
 	hostnamelist = []	 
 	serverlist = []
