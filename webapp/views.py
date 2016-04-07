@@ -93,7 +93,6 @@ class Summary(View):
 		
 		try:
 			for customer in pagination_res:
-				cust_acronym = []
 				res_dict =  {}
 				res_dict['hostidlist'] = []	
 				res_dict['physical_disk_size'] = 0
@@ -102,7 +101,7 @@ class Summary(View):
 				total_grp_usage = 0
 				res_dict['groupname']  = customer.name
 				res_dict['groupid'] = customer.groupnameid
-				cust_acronym.append( customer.acronym)
+				cust_acronym =  customer.acronym.split(',')
 				vlist = applyfilter(cust_acronym)
 				if len(vlist) >  0:
 					# ------- Processing OVM result
