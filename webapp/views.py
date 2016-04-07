@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import *
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from webapp.models import JuiceGroupnames,JuiceGroupvm
-import json,csv
+import json,csv,collections
 from django.utils.encoding import smart_str
 from webapp.utility import *
 from webapp.infinibox import *
@@ -10,7 +10,7 @@ from webapp.par3 import *
 from webapp.vmware import *
 from django.views.generic.base import View
 from django.shortcuts import render,get_object_or_404,redirect
-
+from collections import OrderedDict
 # ***************************************************
 #Intro - Vmreport allows the user to have a detailed view of all the VM/Server(from OVM/Infinibox)
 #which are registered in a customer group, based on the available filters on the VMreport."""
@@ -28,6 +28,10 @@ def get_result_usage(cust_acronym=[]):
             vmware_result,vmware_usage,vmware_error = get_vmware(hostlist)
             par3_result,par3_usage,par3_error = get_3par(hostlist)
 
+            ovm_result = OrderedDict(sorted(ovm_result.items(), key=lambda t: t[0]))            
+            infini_result = OrderedDict(sorted(infini_result.items(), key=lambda t: t[0])) 
+            par3_result = OrderedDict(sorted(par3_result.items(), key=lambda t: t[0]))
+            vmware_result = OrderedDict(sorted(vmware_result.items(), key=lambda t: t[0]))
             result.append(ovm_result)
             result.append(infini_result)
             result.append(par3_result)
