@@ -30,6 +30,7 @@ def get_3par(hostlist):
 	total_usage = 0
 	error = ''
 	serverlist = []
+	vol_list = []
 	res_dict = {}
 	if len(hostlist)== 0:
 		hostlist = par3Host_data#['members'] 
@@ -48,7 +49,8 @@ def get_3par(hostlist):
 						res_dict[server['name']]['disk_list'] = []	
 				for vl in vlunlist:
 					for vol in par3Volume_data: #['members']:
-						if vl == vol['name'] and vol['name'] not in res_dict[server['name']]['volume_list']:
+						if vl == vol['name'] and vol['name'] not in res_dict[server['name']]['volume_list'] and vol['id'] not in vol_list:
+							vol_list.append(vol['id']) # eliminating duplicate volumes from 3par report
 							res_dict[server['name']]['volume_list'].append(vol['name'])
 							vol_dict = {}
 							vol_dict['id'] = vol['id']

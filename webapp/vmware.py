@@ -32,6 +32,7 @@ def get_vmware(vmlist):
 	res_dict = {}
 	error = ''
 	vmware_total_usage = 0
+	disk_list = []
 	try:
 		if len(vmlist) == 0:
 			vmlist = vmware_data # [vmware for vmware in vmware_data]
@@ -44,15 +45,18 @@ def get_vmware(vmlist):
 				res_dict[vm['vmname']]['total_size'] = 0
 				res_dict[vm['vmname']]['disk_list'] = []
 				for detail in vm['vmware_disklist']:
-					disk_dict = {}
-					disk_dict['repo_name'] = detail['reponame']
-					disk_dict['name'] = detail['disk']
-					disk_dict['source'] =  'VMware'
-					size = detail['capacity']
-					disk_dict['size'] = math.ceil(size)
-					res_dict[vm['vmname']]['total_size'] += size
-					res_dict[vm['vmname']]['disk_list'].append(disk_dict)
-					vmware_total_usage += size
+					if detail['disk'] not in disk_list:
+						# remove duplicate disk occurence in the vmware report
+						disk_list.append(detail['disk'])
+						disk_dict = {}
+						disk_dict['repo_name'] = detail['reponame']
+						disk_dict['name'] = detail['disk']
+						disk_dict['source'] =  'VMware'
+						size = detail['capacity']
+						disk_dict['size'] = math.ceil(size)
+						res_dict[vm['vmname']]['total_size'] += size
+						res_dict[vm['vmname']]['disk_list'].append(disk_dict)
+						vmware_total_usage += size
 	except Exception as e:
 		error = "Error in VMware calculation - "+str(e) 
 	return (res_dict,vmware_total_usage,error)

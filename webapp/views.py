@@ -27,11 +27,12 @@ def get_result_usage(cust_acronym=[]):
             ovm_result,ovm_usage,ovm_error = get_ovm(hostlist)
             vmware_result,vmware_usage,vmware_error = get_vmware(hostlist)
             par3_result,par3_usage,par3_error = get_3par(hostlist)
+
             result.append(ovm_result)
             result.append(infini_result)
             result.append(par3_result)
             result.append(vmware_result)
-
+            #result = sorted(result, key=lambda k: k.keys()) 
             usage = ovm_usage+infini_usage+par3_usage+vmware_usage
 
             if len(ovm_error) > 0:
@@ -210,9 +211,14 @@ class Dashboard(View):
 		cust_acronym = []
 		try:
 			if custgrp > 0:
-				cust_acronym .append(JuiceGroupnames.objects.get(groupnameid = custgrp).acronym )
+				cust_acronym = JuiceGroupnames.objects.get(groupnameid = custgrp).acronym 
+				cust_acronym = cust_acronym.split(',') # handling multiple group acronyms
 			else:
-				cust_acronym = JuiceGroupnames.objects.all().values_list('acronym',flat=True)
+				custgrp_obj = JuiceGroupnames.objects.all()
+				for cust in custgrp_obj:
+					acronymlist = cust.acronym.split(',') # handling multiple group acronyms
+					for acronym in acronymlist:
+						cust_acronym.append(acronym)
 			hostidlist = []
 			ovm_serverlist = get_ovm_serverlist()
 			infini_serverlist = get_infini_serverlist()

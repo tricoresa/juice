@@ -42,6 +42,7 @@ def get_infini(hostlist,limit=1000):
         infini_total_usage = 0
         error = ''
         res_dict = {}
+        vol_list = []
         try:
                 if  len(hostlist) == 0:
                         hostlist = infini_host_data #['result']
@@ -57,7 +58,8 @@ def get_infini(hostlist,limit=1000):
                                    vol_dict = {}
                                    if volume['type'].upper() == 'MASTER':
                                             if volume['mapped'] == True: 
-                                                    if lun['volume_id'] == volume['id']:
+                                                    if lun['volume_id'] == volume['id'] and volume['id'] not in vol_list:
+                                                            vol_list.append(volume['id'])  # eliminating duplicate columes from infini report
                                                             vol_dict['name'] = volume['name']
                                                             vol_dict['id'] = volume['id']
                                                             vol_dict['source'] = 'Infinibox'

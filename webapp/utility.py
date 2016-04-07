@@ -178,6 +178,7 @@ def get_unmapped_ovm():
 # -------------Get VM from OVM and its respective Virtual and physical disks/repo details on the basis of selected VMs ------ #
 def get_ovm(vlist):
 	total_usage= 0
+	disk_list = []
 	error = ''
 	res_dict  = {}
 	try:
@@ -199,11 +200,15 @@ def get_ovm(vlist):
 
 			for disk in vmdiskmapping_data:
 				if disk['vmId']['value'] == id and disk['storageElementId']!= None:
-						diskname =  disk.get('storageElementId').get('name') if disk.get('storageElementId').get('name') else 'None'
+					diskname =  disk.get('storageElementId').get('name') if disk.get('storageElementId').get('name') else 'None'
+					diskid = disk.get('storageElementId').get('value')
+					if diskid not in disk_list:
+						# remove duplicate physical_disks from the OVM report
+						disk_list.append(diskid)
 						physical_dict = {}
 						physical_dict['name'] = diskname
 						physical_dict['source'] = 'OVM'
-						physicaldisk_id = disk.get('storageElementId').get('value')
+						physicaldisk_id = diskid
 						physical_dict['id'] = physicaldisk_id
 
 						#for physical disk size
@@ -221,11 +226,15 @@ def get_ovm(vlist):
 						physical_dict['repo_name'] = ""
 						res_dict[servername]['physicalist'].append(physical_dict)
 				elif  disk['vmId']['value'] == id and disk.get('virtualDiskId') != None:
-						diskname = disk.get('virtualDiskId').get('name') if disk.get('virtualDiskId').get('name') else 'None'
+					diskname = disk.get('virtualDiskId').get('name') if disk.get('virtualDiskId').get('name') else 'None'
+					diskid = disk.get('virtualDiskId').get('value')
+					if diskid not in disk_list:
+						# remove duplicate virtual_lists from OVM report
+						disk_list.append(diskid)
 						virtual_dict = {}
 						virtual_dict['name'] = diskname
 						virtual_dict['source'] = 'OVM'
-						virtualdisk_id = disk.get('virtualDiskId').get('value')
+						virtualdisk_id = diskid
 						virtual_dict['id'] = virtualdisk_id
 						virtual_dict['total'] = 0
 						#for virtual disk size and repo name
