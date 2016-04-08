@@ -19,6 +19,7 @@ from collections import OrderedDict
 #------ vm/disk report common module -------#
 def get_result_usage(cust_acronym=[]):
         result = []
+        result_csv = []
         usage = 0
         error = []
         hostlist  = applyfilter(cust_acronym)
@@ -27,16 +28,22 @@ def get_result_usage(cust_acronym=[]):
             ovm_result,ovm_usage,ovm_error = get_ovm(hostlist)
             vmware_result,vmware_usage,vmware_error = get_vmware(hostlist)
             par3_result,par3_usage,par3_error = get_3par(hostlist)
+ 
+            # --------------List of regular dictionaries to facilitate CSV export
+            result_csv.append(ovm_result)
+            result_csv.append(infini_result)
+            result_csv.append(par3_result)
+            result_csv.append(vmware_result)
 
-            """ovm_result = OrderedDict(sorted(ovm_result.items(), key=lambda t: t[0]))            
+            # --------------List of OrderedDict to display each storage system details  in sorted order in VM/disk report
+            ovm_result = OrderedDict(sorted(ovm_result.items(), key=lambda t: t[0]))            
             infini_result = OrderedDict(sorted(infini_result.items(), key=lambda t: t[0])) 
             par3_result = OrderedDict(sorted(par3_result.items(), key=lambda t: t[0]))
-            vmware_result = OrderedDict(sorted(vmware_result.items(), key=lambda t: t[0]))"""
+            vmware_result = OrderedDict(sorted(vmware_result.items(), key=lambda t: t[0]))
             result.append(ovm_result)
             result.append(infini_result)
             result.append(par3_result)
             result.append(vmware_result)
-            #result = sorted(result, key=lambda k: k.keys()) 
             usage = ovm_usage+infini_usage+par3_usage+vmware_usage
 
             if len(ovm_error) > 0:
@@ -49,7 +56,7 @@ def get_result_usage(cust_acronym=[]):
                 error.append(vmware_error)
         else:
             result,usage,error = {},0,''
-        return result,usage,error
+        return result,result_csv,usage,error
 
 # ------ Module for unmapped Disks and VM listing  --------#
 class UnmappedDisk(View):	
@@ -169,7 +176,7 @@ class CSVExport(View):
 					res_dict['diskname'] = disk.get('name')
 					res_dict['disksize'] = disk.get('size')
 					res_dict['vm'] = val.get('vm_name')
-					res_dict['servername'] = key
+					res_dict['servername'] = key if val.get('VMware') != 1 else val.get('vmhost')
 					result.append(res_dict)
 		for obj in result:
 			writer.writerow([
@@ -230,7 +237,7 @@ class Dashboard(View):
 			serverlist = ovm_serverlist + infini_serverlist + par3_serverlist + vmware_serverlist
 			newserverlist = set(serverlist)
 
-			result,usage,error = get_result_usage(cust_acronym)
+			result,result_csv,usage,error = get_result_usage(cust_acronym)
 			total_usage = usage
 			if len(error)  > 0:
 				error_notify = str(error)
@@ -238,7 +245,7 @@ class Dashboard(View):
 				empty_notify = "No result matching the filters"
 		except Exception as e:
 			error_notify = "Error in Report caluclation - "+str(e)
-		return render(request,'webapp/dashboard.html',{'error_notify':error_notify,'empty_notify':empty_notify,'exclude_list':exclude_list,'reslist':result,'active_user':active_user,'serverlist':newserverlist,'cust_grp':custgrp,'customergrouplist':cust_grplist,'total_usage':total_usage,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})
+		return render(request,'webapp/dashboard.html',{'error_notify':error_notify,'empty_notify':empty_notify,'result_csv':result_csv,'exclude_list':exclude_list,'reslist':result,'active_user':active_user,'serverlist':newserverlist,'cust_grp':custgrp,'customergrouplist':cust_grplist,'total_usage':total_usage,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})
 
 	
 	

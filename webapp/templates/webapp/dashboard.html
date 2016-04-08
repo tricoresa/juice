@@ -8,8 +8,7 @@ $(function ()
         {
 
 	    $( "#csvexport" ).submit(function() {
-                var reslist = {% autoescape off %}{{reslist}}{%endautoescape %}
-                alert("autoescaped",reslist);
+                var reslist = {% autoescape off %}{{result_csv}}{%endautoescape %}
                 $("#csvpost").val(JSON.stringify(reslist))
         });
 });
