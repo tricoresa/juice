@@ -59,4 +59,4 @@ def get_vmware(vmlist):
 						vmware_total_usage += size
 	except Exception as e:
 		error = "Error in VMware calculation - "+str(e) 
-	return (res_dict,vmware_total_usage,error)
+	return (res_dict,math.ceil(vmware_total_usage),error)
