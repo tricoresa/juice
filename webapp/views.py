@@ -28,10 +28,10 @@ def get_result_usage(cust_acronym=[]):
             vmware_result,vmware_usage,vmware_error = get_vmware(hostlist)
             par3_result,par3_usage,par3_error = get_3par(hostlist)
 
-            ovm_result = OrderedDict(sorted(ovm_result.items(), key=lambda t: t[0]))            
+            """ovm_result = OrderedDict(sorted(ovm_result.items(), key=lambda t: t[0]))            
             infini_result = OrderedDict(sorted(infini_result.items(), key=lambda t: t[0])) 
             par3_result = OrderedDict(sorted(par3_result.items(), key=lambda t: t[0]))
-            vmware_result = OrderedDict(sorted(vmware_result.items(), key=lambda t: t[0]))
+            vmware_result = OrderedDict(sorted(vmware_result.items(), key=lambda t: t[0]))"""
             result.append(ovm_result)
             result.append(infini_result)
             result.append(par3_result)

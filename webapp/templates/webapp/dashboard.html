@@ -3,6 +3,17 @@
 {% load bootstrap3 %}
 
 {%block extrahead%}
+<script type="text/javascript">
+$(function ()
+        {
+
+	    $( "#csvexport" ).submit(function() {
+                var reslist = {% autoescape off %}{{reslist}}{%endautoescape %}
+                alert("autoescaped",reslist);
+                $("#csvpost").val(JSON.stringify(reslist))
+        });
+});
+</script>
 <!--script type="text/javascript">	
 $(function ()
         {
@@ -10,7 +21,9 @@ $(function ()
 	if ($("#sourceid").val() == 0)
 		$('#limit').hide();	
 	$( "#csvexport" ).submit(function() {
+		alert('here');
 		var reslist = {% autoescape off %}{{reslist}}{%endautoescape %}
+		alert(reslist)
 		$("#csvpost").val(JSON.stringify(reslist))
 	});
 	$("#vmreport_filter").submit(function() {
