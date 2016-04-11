@@ -62,7 +62,8 @@ def get_3par(hostlist):
 							res_dict[server['name']]['total_size'] += size #bytesto(vol['sizeMiB'],'g')
 							total_usage += size
 							res_dict[server['name']]['disk_list'].append(vol_dict)
-			#total_usage += res_dict[server['name']]['total_size']
+					if len(res_dict[server['name']]['disk_list']) == 0:
+						res_dict.pop(server['name'],None) 
 	except Exception as e:
 		error = "Error occured in 3par calculation- "+str(e)
 	return res_dict, total_usage, error

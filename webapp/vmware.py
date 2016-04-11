@@ -57,6 +57,8 @@ def get_vmware(vmlist):
 						res_dict[vm['vmname']]['total_size'] += size
 						res_dict[vm['vmname']]['disk_list'].append(disk_dict)
 						vmware_total_usage += size
+				if len(res_dict[vm['vmname']]['disk_list']) == 0:
+					res_dict.pop(res_dict[vm['vmname']],None)
 	except Exception as e:
 		error = "Error in VMware calculation - "+str(e) 
 	return (res_dict,math.ceil(vmware_total_usage),error)

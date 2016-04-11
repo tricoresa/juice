@@ -56,19 +56,20 @@ def get_infini(hostlist,limit=1000):
                         for lun in luns:
                             for volume in volume_list_json: #['result']:
                                    vol_dict = {}
-                                   if volume['type'].upper() == 'MASTER':
-                                            if volume['mapped'] == True: 
-                                                    if lun['volume_id'] == volume['id'] and volume['id'] not in vol_list:
-                                                            vol_list.append(volume['id'])  # eliminating duplicate columes from infini report
-                                                            vol_dict['name'] = volume['name']
-                                                            vol_dict['id'] = volume['id']
-                                                            vol_dict['source'] = 'Infinibox'
-                                                            size = bytesto(volume['size'],'g')
-                                                            res_dict[host['name']]['total_size']+= size
-                                                            infini_total_usage += size
-                                                            vol_dict['size'] = size
-                                                            res_dict[host['name']]['disk_list'].append(vol_dict)
-                    #infini_total_usage += res_dict[host['name']]['total_size']
+                                   if lun['volume_id'] == volume['id'] and  volume['type'].upper() == 'MASTER' and volume['mapped'] == True: 
+                                       if volume['id'] not in vol_list:
+                                           vol_list.append(volume['id'])  # eliminating duplicate columes from infini report
+                                           vol_dict['name'] = volume['name']
+                                           vol_dict['id'] = volume['id']
+                                           vol_dict['source'] = 'Infinibox'
+                                           size = bytesto(volume['size'],'g')
+                                           res_dict[host['name']]['total_size']+= size
+                                           infini_total_usage += size
+                                           vol_dict['size'] = size
+                                           res_dict[host['name']]['disk_list'].append(vol_dict)
+                        #infini_total_usage += res_dict[host['name']]['total_size']
+                        if len(res_dict[host['name']]['disk_list']) == 0:
+                            res_dict.pop(host['name'],None)
         except Exception as e:
                 error = "Error in Infinibox calculation - "+str(e)
         return (res_dict,infini_total_usage,error)
