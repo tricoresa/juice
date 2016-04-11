@@ -90,21 +90,44 @@ def pagination(obj,limit,page=1):
         return pagination_res
 
 #------Module to apply the user defined filter of customer group or server/host name to get the specific Host(s) details -------#
-def applyfilter(cust_acronym_list=[]):
+def applyfilter(cust_acronym_list=[],server=[],server_acronym=''):
 	hostlist = []
-	for cust_grp_acronym in cust_acronym_list:
-		for vm in vmdata:
+	for vm in vmdata:
+		for cust_grp_acronym in cust_acronym_list:
 			if cust_grp_acronym != '' and  cust_grp_acronym.lower() in vm['id']['name'].lower() and vm not in hostlist:
 				hostlist.append(vm)
-		for host in infini_host_data:#['result']:
+		if len(server) != 0 :
+			if vm['id']['name'] in server and vm not in hostlist:
+				hostlist.append(vm)
+		if server_acronym != '' and server_acronym.lower() in vm['id']['name'].lower() and vm not in hostlist:
+			hostlist.append(vm)
+	for host in infini_host_data:#['result']:
+		for cust_grp_acronym in cust_acronym_list:
 			if cust_grp_acronym != '' and cust_grp_acronym.lower() in host['name'].lower() and host not in hostlist:
 				hostlist.append(host)
-		for par3_host in par3Host_data :#['members']:
+		if  len(server) != 0 :
+			if str(host['name']) in server and host not in hostlist:
+				hostlist.append(host)
+		if server_acronym != '' and server_acronym.lower() in host['name'].lower() and host not in hostlist:
+			hostlist.append(host)
+	for par3_host in par3Host_data :#['members']:
+		for cust_grp_acronym in cust_acronym_list:
 			if 'name' in par3_host and  cust_grp_acronym != '' and cust_grp_acronym.lower() in par3_host['name'].lower() and par3_host not in hostlist:
 				hostlist.append(par3_host)
-		for vmware in vmware_data:
+		if len(server) != 0:
+			if 'name' in par3_host and str(par3_host['name']) in server and par3_host not in hostlist:
+				hostlist.append(par3_host)
+		if 'name' in par3_host and server_acronym != '' and server_acronym.lower() in par3_host['name'].lower() and par3_host not in hostlist:
+			hostlist.append(par3_host)
+	for vmware in vmware_data:
+		for cust_grp_acronym in cust_acronym_list:
 			if cust_grp_acronym != '' and cust_grp_acronym.lower() in vmware['vmname'].lower() and vmware not in hostlist:
 				hostlist.append(vmware)	
+		if len(server) != 0 :
+			if vmware['vmname'] in server and vmware not in hostlist:
+				hostlist.append(vmware)
+		if server_acronym != '' and server_acronym.lower() in vmware['vmname'].lower() and vmware not in hostlist:
+			hostlist.append(vmware)
 	return  hostlist
 
 #--------Module to get server/host names from all hosts across OVM/infini/3par/VMWare ------#

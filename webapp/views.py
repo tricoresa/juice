@@ -17,12 +17,12 @@ from collections import OrderedDict
 # ***************************************************
 
 #------ vm/disk report common module -------#
-def get_result_usage(cust_acronym=[]):
+def get_result_usage(cust_acronym=[],server = [], server_acronym = ''):
         result = []
         result_csv = []
         usage = 0
         error = []
-        hostlist  = applyfilter(cust_acronym)
+        hostlist  = applyfilter(cust_acronym,server,server_acronym)
         if len(hostlist)>0:
             infini_result,infini_usage,infini_error = get_infini(hostlist)
             ovm_result,ovm_usage,ovm_error = get_ovm(hostlist)
@@ -212,6 +212,8 @@ class Dashboard(View):
 			return redirect('/webapp/login?next='+request.path)
 		active_user = get_user_grp(request.user)
 		custgrp = int(self.request.POST.get('group') or 0)
+		server = self.request.POST.getlist('server') or []
+		server_acronym = self.request.POST.get('server_acronym') or ''
 		cust_grplist = JuiceGroupnames.objects.all().order_by('name')
 		result=[]
 		total_usage = 0
@@ -219,16 +221,17 @@ class Dashboard(View):
 		empty_notify  = ''
 		newserverlist = []
 		cust_acronym = []
+		result_csv = []
 		try:
 			if custgrp > 0:
 				cust_acronym = JuiceGroupnames.objects.get(groupnameid = custgrp).acronym 
 				cust_acronym = cust_acronym.split(',') # handling multiple group acronyms
-			else:
-				custgrp_obj = JuiceGroupnames.objects.all()
-				for cust in custgrp_obj:
-					acronymlist = cust.acronym.split(',') # handling multiple group acronyms
-					for acronym in acronymlist:
-						cust_acronym.append(acronym)
+			#else:
+			#	custgrp_obj = JuiceGroupnames.objects.all()
+			#	for cust in custgrp_obj:
+			#		acronymlist = cust.acronym.split(',') # handling multiple group acronyms
+			#		for acronym in acronymlist:
+			#			cust_acronym.append(acronym)
 			hostidlist = []
 			ovm_serverlist = get_ovm_serverlist()
 			infini_serverlist = get_infini_serverlist()
@@ -236,13 +239,19 @@ class Dashboard(View):
 			vmware_serverlist = get_vmware_serverlist()
 			serverlist = ovm_serverlist + infini_serverlist + par3_serverlist + vmware_serverlist
 			newserverlist = set(serverlist)
-
-			result,result_csv,usage,error = get_result_usage(cust_acronym)
+			
+			if active_user == 1 :
+				result,result_csv,usage,error = get_result_usage(cust_acronym,server,server_acronym)	
+			else:
+				result,result_csv,usage,error = get_result_usage(cust_acronym)
 			total_usage = usage
 			if len(error)  > 0:
 				error_notify = str(error)
 			if len(result) == 0:
-				empty_notify = "No result matching the filters"
+				if custgrp == 0:
+					pass
+				else:
+					empty_notify = "No result matching the filters"
 		except Exception as e:
 			error_notify = "Error in Report caluclation - "+str(e)
 		return render(request,'webapp/dashboard.html',{'error_notify':error_notify,'empty_notify':empty_notify,'result_csv':result_csv,'exclude_list':exclude_list,'reslist':result,'active_user':active_user,'serverlist':newserverlist,'cust_grp':custgrp,'customergrouplist':cust_grplist,'total_usage':total_usage,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})

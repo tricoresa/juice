@@ -3,26 +3,14 @@
 {% load bootstrap3 %}
 
 {%block extrahead%}
-<script type="text/javascript">
-$(function ()
-        {
-
-	    $( "#csvexport" ).submit(function() {
-                var reslist = {% autoescape off %}{{result_csv}}{%endautoescape %}
-                $("#csvpost").val(JSON.stringify(reslist))
-        });
-});
-</script>
-<!--script type="text/javascript">	
+<script type="text/javascript">	
 $(function ()
         {
 
 	if ($("#sourceid").val() == 0)
 		$('#limit').hide();	
 	$( "#csvexport" ).submit(function() {
-		alert('here');
-		var reslist = {% autoescape off %}{{reslist}}{%endautoescape %}
-		alert(reslist)
+		var reslist = {% autoescape off %}{{result_csv}}{%endautoescape %}
 		$("#csvpost").val(JSON.stringify(reslist))
 	});
 	$("#vmreport_filter").submit(function() {
@@ -68,7 +56,7 @@ $(function ()
 	}
 
 });
-</script-->
+</script>
 {%endblock%}
 {% block content %}
 <div class="container-fluid">
@@ -148,14 +136,15 @@ $(function ()
            <span>Select Customer Group</span>
 
            <select name="group" id = "filter_select1" onchange="this.form.submit()" class="input-sm" style="width:260px;">
-                <option value="0" {%ifequal cust_grp 0%}selected=""{%endifequal%}>All</option>
+                <option value="0" {%ifequal cust_grp 0%}selected=""{%endifequal%}>None</option>
                 {%for grp in customergrouplist%}
                   <option  value={{grp.groupnameid}} {%ifequal grp.groupnameid cust_grp%}selected=""{%endifequal%}>{{grp.name}}</option>
                 {%endfor%}
            </select>
          </div>
 		
-	<!--div class="form-group">
+	{%if   active_user = 1 %}
+	<div class="form-group">
            <span>Select Server  /  </span><a href= "javascript:;" id = "clear_server" >Clear server</a>
 	   <input type="text" name="server_acronym" id = "filterinput2" class="input-sm" placeholder="Search Server/VM" autocomplete="off"> 
 		{%if  not active_user = 3 %}	<a href= "" target="_blank" id = "savegrp" >Save group</a> {%endif%}
@@ -166,7 +155,8 @@ $(function ()
                 {%endfor%}
            </select>
          </div>
-	<div  id='limit' class="form-group">
+	{%endif%}
+	<!--div  id='limit' class="form-group">
            <span>Number of Records</span>
            <select name="limit" id= "selectLimit" class="input-sm" style="width:260px;">
 		<option value="0" {%ifequal limit 0 %}selected=""{%endifequal%}>All</option>

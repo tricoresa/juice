@@ -7,7 +7,7 @@ session=requests.Session()
 session.verify= False #disables SSL certificate verification
 session.auth=('juice','tcs_juice')
 session.headers.update({'Accept': 'application/json', 'Content-Type': 'application/json'})
-baseUri='https://smdcovmm01.tricorems.com:7002/ovm/core/wsapi/rest'
+baseUri='https://chdcovmm01.tricorems.com:7002/ovm/core/wsapi/rest'
 
 inf_session = requests.Session()
 inf_session.auth=('juice','Svc-ju1c3') # supply auth info
@@ -24,34 +24,34 @@ vol_baseUri3 = 'https://10.66.100.85//api/rest/volumes'
 host_baseUri3='https://10.66.100.85//api/rest/hosts'
 
 celery = Celery('create_json', broker='amqp://guest@localhost//')
-@task()
+@celery.task()
 def create_json():
 	# Saving the json data to respective files for OVM
 	Vm = session.get(baseUri+'/Vm')
-	with open('webapp/JSON/vm.json', 'w') as outfile:
+	with open('JSON/vm.json', 'w') as outfile:
 	    json.dump(Vm.json(), outfile)
 	
 	Server = session.get(baseUri+'/Server')
-	with open('webapp/JSON/server.json', 'w') as outfile:
+	with open('JSON/server.json', 'w') as outfile:
 	    json.dump(Server.json(), outfile)
 	
 	Repo = session.get(baseUri+'/Repository')
-	with open('webapp/JSON/repo.json', 'w') as outfile:
+	with open('JSON/repo.json', 'w') as outfile:
 	    json.dump(Repo.json(), outfile)
 
 	StorageElem = session.get(baseUri+'/StorageElement')
-	with open('webapp/JSON/storagelem.json', 'w') as outfile:
+	with open('JSON/storagelem.json', 'w') as outfile:
 		json.dump(StorageElem.json(), outfile)
 
 	VirtualDisk = session.get(baseUri+'/VirtualDisk')
-	with open('webapp/JSON/virtualdisk.json', 'w') as outfile:
+	with open('JSON/virtualdisk.json', 'w') as outfile:
 		json.dump(VirtualDisk.json(), outfile)
 
 	VmDiskMapping = session.get(baseUri+'/VmDiskMapping')
-	with open('webapp/JSON/vmdiskmapping.json', 'w') as outfile:
+	with open('JSON/vmdiskmapping.json', 'w') as outfile:
 		json.dump(VmDiskMapping.json(), outfile)
 
-
+	exit()
 	
 	
 	
@@ -90,10 +90,10 @@ def create_json():
 	host_list=inf_session.get(host_baseUri+"?page_size="+str(PAGE_SIZE))
 	host_list_json=host_list.json()
 	
-	with open('webapp/JSON/infini_vol.json', 'w') as outfile:
+	with open('JSON/infini_vol.json', 'w') as outfile:
 	    json.dump(volume_list_json, outfile)
 	
-	with open('webapp/JSON/infini_host.json', 'w') as outfile:
+	with open('JSON/infini_host.json', 'w') as outfile:
 	    json.dump(host_list_json, outfile)"""
 	
 
@@ -145,17 +145,21 @@ def create_json():
 		except:
 			pass"""
 
-	with open('webapp/JSON/3par_vol.json', 'w') as outfile:
+	with open('JSON/3par_vol.json', 'w') as outfile:
 		json.dump(volume_data, outfile)
-	with open('webapp/JSON/3par_host.json', 'w') as outfile:
+	with open('JSON/3par_host.json', 'w') as outfile:
 		json.dump(host_data, outfile)
-	with open('webapp/JSON/3par_vlun.json', 'w') as outfile:
+	with open('JSON/3par_vlun.json', 'w') as outfile:
 	    json.dump(vluns, outfile)
 	cl.logout()
 	cl2.logout()
 	cl3.logout()
 
-	#Saving VMware data for 10.62.100.15
+
+
+
+
+	#Saving VMware data for 10.62.100.15, 10.66.100.15
 	from pyVim.connect import SmartConnect, Disconnect
 	from pyVmomi import vim, vmodl
 	import argparse
@@ -191,5 +195,28 @@ def create_json():
 				tmp_dict['capacity'] = each_vm_hardware.capacityInKB/1024/1024
 				repo_dict['vmware_disklist'].append(tmp_dict)
 		result.append(repo_dict)
-	with open('webapp/JSON/vmware.json', 'w') as outfile:
+	si = SmartConnect(host='10.66.100.15',
+                     user='svc-juice',
+                     pwd='bnDhPNavNs@^64Y-',
+                     port=int(443),
+                     sslContext=context)
+	content = si.RetrieveContent()
+	objview = content.viewManager.CreateContainerView(content.rootFolder,[vim.VirtualMachine],True)
+	for vm in objview.view:
+		repo_dict = {}
+		repo_dict['vmhost'] = vm.runtime.host.name
+		repo_dict['vmname'] = vm.config.name
+		repo_dict['vmware_disklist'] = []
+		hardware = vm.config.hardware
+		for each_vm_hardware in hardware.device:
+			if (each_vm_hardware.key >= 2000) and (each_vm_hardware.key < 3000):
+				tmp_dict = {}
+				reponame = each_vm_hardware.backing.fileName.split(']')[0]
+				tmp_dict['reponame'] = reponame[1:]
+				disk = each_vm_hardware.backing.fileName.split('/')[1]
+				tmp_dict['disk'] = disk
+				tmp_dict['capacity'] = each_vm_hardware.capacityInKB/1024/1024
+				repo_dict['vmware_disklist'].append(tmp_dict)
+		result.append(repo_dict)
+	with open('JSON/vmware.json', 'w') as outfile:
 		json.dump(result, outfile)
