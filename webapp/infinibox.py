@@ -56,7 +56,7 @@ def get_infini(hostlist,limit=1000):
                         for lun in luns:
                             for volume in volume_list_json: #['result']:
                                    vol_dict = {}
-                                   if lun['volume_id'] == volume['id'] and  volume['type'].upper() == 'MASTER' and volume['mapped'] == True: 
+                                   if lun['volume_id'] == volume['id'] and volume['mapped'] == True: 
                                        if volume['id'] not in vol_list:
                                            vol_list.append(volume['id'])  # eliminating duplicate columes from infini report
                                            vol_dict['name'] = volume['name']
