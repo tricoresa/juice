@@ -19,7 +19,6 @@ from collections import OrderedDict
 #------ vm/disk report common module -------#
 def get_result_usage(cust_acronym=[],server = [], server_acronym = ''):
         result = []
-        result_csv = []
         usage = 0
         error = []
         hostlist  = applyfilter(cust_acronym,server,server_acronym)
@@ -29,21 +28,17 @@ def get_result_usage(cust_acronym=[],server = [], server_acronym = ''):
             vmware_result,vmware_usage,vmware_error = get_vmware(hostlist)
             par3_result,par3_usage,par3_error = get_3par(hostlist)
  
-            # --------------List of regular dictionaries to facilitate CSV export
-            result_csv.append(ovm_result)
-            result_csv.append(infini_result)
-            result_csv.append(par3_result)
-            result_csv.append(vmware_result)
-
-            # --------------List of OrderedDict to display each storage system details  in sorted order in VM/disk report
-            ovm_result = OrderedDict(sorted(ovm_result.items(), key=lambda t: t[0]))            
-            infini_result = OrderedDict(sorted(infini_result.items(), key=lambda t: t[0])) 
-            par3_result = OrderedDict(sorted(par3_result.items(), key=lambda t: t[0]))
-            vmware_result = OrderedDict(sorted(vmware_result.items(), key=lambda t: t[0]))
             result.append(ovm_result)
             result.append(infini_result)
             result.append(par3_result)
             result.append(vmware_result)
+            res_dict = {}
+            for res in result:
+                for key,value in res.items():
+                    if key not in res_dict:
+                        res_dict[key] = {'disk_list':[],'total_size':0}
+                    res_dict[key]['disk_list']+= res[key]['disk_list']
+                    res_dict[key]['total_size'] += res[key]['total_size']
             usage = ovm_usage+infini_usage+par3_usage+vmware_usage
 
             if len(ovm_error) > 0:
@@ -55,8 +50,8 @@ def get_result_usage(cust_acronym=[],server = [], server_acronym = ''):
             if len(vmware_error)>0:
                 error.append(vmware_error)
         else:
-            result,usage,error = {},0,''
-        return result,result_csv,usage,error
+            res_dict,usage,error = {},0,''
+        return res_dict,usage,error
 
 # ------ Module for unmapped Disks and VM listing  --------#
 class UnmappedDisk(View):	
@@ -153,7 +148,7 @@ class CSVExport(View):
 		if login_required(request.user):
 			return redirect('/webapp/login?next='+request.path)
 		ajax = int(self.request.POST.get('ajax') or 0)
-		reslist = json.loads(self.request.POST.get('reslist'))
+		resdict = json.loads(self.request.POST.get('resdict'))
 		response = HttpResponse(content_type='text/csv')
 		response['Content-Disposition'] = 'attachment; filename=VMReport.csv'
 		writer = csv.writer(response, csv.excel)
@@ -167,17 +162,16 @@ class CSVExport(View):
 			smart_str('Disk Size'),
 		])
 		result = []
-		for res in reslist:
-			for key,val in res.items():
-				for disk in val['disk_list']:
-					res_dict = {}
-					res_dict['repo'] = disk.get('repo_name')
-					res_dict['diskid'] = disk.get('id')
-					res_dict['diskname'] = disk.get('name')
-					res_dict['disksize'] = disk.get('size')
-					res_dict['vm'] = val.get('vm_name')
-					res_dict['servername'] = key if val.get('VMware') != 1 else val.get('vmhost')
-					result.append(res_dict)
+		for key,val in resdict.items():
+			for disk in val['disk_list']:
+				res_dict = {}
+				res_dict['repo'] = disk.get('repo_name')
+				res_dict['diskid'] = disk.get('id')
+				res_dict['diskname'] = disk.get('name')
+				res_dict['disksize'] = disk.get('size')
+				res_dict['vm'] = val.get('vm_name')
+				res_dict['servername'] = key if val.get('VMware') != 1 else val.get('vmhost')
+				result.append(res_dict)
 		for obj in result:
 			writer.writerow([
 				smart_str(obj['vm']),
@@ -221,7 +215,7 @@ class Dashboard(View):
 		empty_notify  = ''
 		newserverlist = []
 		cust_acronym = []
-		result_csv = []
+		res_dict = {}
 		try:
 			if custgrp > 0:
 				cust_acronym = JuiceGroupnames.objects.get(groupnameid = custgrp).acronym 
@@ -241,20 +235,20 @@ class Dashboard(View):
 			newserverlist = set(serverlist)
 			
 			if active_user == 1 :
-				result,result_csv,usage,error = get_result_usage(cust_acronym,server,server_acronym)	
+				res_dict,usage,error = get_result_usage(cust_acronym,server,server_acronym)	
 			else:
-				result,result_csv,usage,error = get_result_usage(cust_acronym)
+				res_dict,usage,error = get_result_usage(cust_acronym)
 			total_usage = usage
 			if len(error)  > 0:
 				error_notify = str(error)
-			if len(result) == 0:
+			if len(res_dict) == 0:
 				if custgrp == 0:
 					pass
 				else:
 					empty_notify = "No result matching the filters"
 		except Exception as e:
 			error_notify = "Error in Report caluclation - "+str(e)
-		return render(request,'webapp/dashboard.html',{'error_notify':error_notify,'empty_notify':empty_notify,'result_csv':result_csv,'exclude_list':exclude_list,'reslist':result,'active_user':active_user,'serverlist':newserverlist,'cust_grp':custgrp,'customergrouplist':cust_grplist,'total_usage':total_usage,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})
+		return render(request,'webapp/dashboard.html',{'error_notify':error_notify,'empty_notify':empty_notify,'resdict_csv':res_dict,'exclude_list':exclude_list,'resdict':OrderedDict(sorted(res_dict.items(), key=lambda t: t[0])),'active_user':active_user,'serverlist':newserverlist,'cust_grp':custgrp,'customergrouplist':cust_grplist,'total_usage':total_usage,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})
 
 	
 	

@@ -10,8 +10,8 @@ $(function ()
 	if ($("#sourceid").val() == 0)
 		$('#limit').hide();	
 	$( "#csvexport" ).submit(function() {
-		var reslist = {% autoescape off %}{{result_csv}}{%endautoescape %}
-		$("#csvpost").val(JSON.stringify(reslist))
+		var resdict = {% autoescape off %}{{resdict_csv}}{%endautoescape %}
+		$("#csvpost").val(JSON.stringify(resdict))
 	});
 	$("#vmreport_filter").submit(function() {
 		$("#notify").html('<b>Processing Request.....</b>')	
@@ -78,14 +78,13 @@ $(function ()
     <div class="pull-right">
 	<form id = "csvexport" class="form" role="form" action="/webapp/csvexport/" method="POST">	
 		{% csrf_token %}
-		<input type="hidden" id ="csvpost" name='reslist' value="" />
+		<input type="hidden" id ="csvpost" name='resdict' value="" />
 		<button type="submit" id="CSVbutton" class="btn btn-primary"> CSV Export</button>
 	</form>
     </div>
     {%if error_notify == ''%}
     <h4>Total disk usage =  {{total_usage}} </h4>
-    {% for item in reslist %}
-	{% for key, res in item.items %}
+	{% for key, res in resdict.items %}
       <ul> 
         <li><h5><u>{{res.vm_name}}</u> (server- <b>{%if res.VMware == 1 %}{{res.vmhost}}{%else%}{{key}}{%endif%}</b>)</h5>  Total Disk size = {{res.total_size}}</li>
        </ul>
@@ -108,7 +107,6 @@ $(function ()
            </tr>
         {%endfor%}
        </table>
-     {%endfor%}
      {%empty%}
          <p style="background-color: #F3D2D8;">{{empty_notify}}</p>
          <p class="text-danger">PLEASE SELECT THE CUSTOMER GROUP FILTER TO VIEW THE VM/DISK REPORT FOR OVM/INFINIBOX/3PAR/VMware.<br/> 'All' CUSTOMER GROUP FILTER MAY TAKE A LITTLE WHILE TO PROCESS</p>
