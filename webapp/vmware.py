@@ -32,32 +32,35 @@ def get_vmware(vmlist):
 	res_dict = {}
 	error = ''
 	vmware_total_usage = 0
-	disk_list = []
+	temp_dict = {}
 	try:
 		if len(vmlist) == 0:
 			vmlist = vmware_data # [vmware for vmware in vmware_data]
 		for vm in vmlist:
-			if 'vmname' in vm and vm['vmname'] not in res_dict:
-				res_dict[vm['vmname']] = {}
-				res_dict[vm['vmname']]['VMware'] = 1
-				res_dict[vm['vmname']]['vmhost'] = vm['vmhost']
-				res_dict[vm['vmname']]['vm_name'] = vm['vmname']
-				res_dict[vm['vmname']]['total_size'] = 0
-				res_dict[vm['vmname']]['disk_list'] = []
+			if 'vmname' in vm:
+				if  vm['vmname'] not in res_dict:
+					res_dict[vm['vmname']] = {}
+					res_dict[vm['vmname']]['VMware'] = 1
+					res_dict[vm['vmname']]['vmhost'] = vm['vmhost']
+					res_dict[vm['vmname']]['vm_name'] = vm['vmname']
+					res_dict[vm['vmname']]['total_size'] = 0
+					res_dict[vm['vmname']]['disk_list'] = []
 				for detail in vm['vmware_disklist']:
-					if detail['disk'] not in disk_list:
-						# remove duplicate disk occurence in the vmware report
-						disk_list.append(detail['disk'])
+					if detail['reponame'] not in temp_dict:
+						temp_dict[detail['reponame']] = []
+					#-------- remove duplicate disk and repo combination occurence in the vmware report
+					if detail['disk'] not in  temp_dict[detail['reponame']]:
+						temp_dict[detail['reponame']].append(detail['disk'])
 						disk_dict = {}
 						disk_dict['repo_name'] = detail['reponame']
 						disk_dict['name'] = detail['disk']
 						disk_dict['source'] =  'VMware'
-						size = detail['capacity']
-						disk_dict['size'] = math.ceil(size)
+						size = math.ceil(detail['capacity'])
+						disk_dict['size'] = size
 						res_dict[vm['vmname']]['total_size'] += size
 						res_dict[vm['vmname']]['disk_list'].append(disk_dict)
 						vmware_total_usage += size
-				if len(res_dict[vm['vmname']]['disk_list']) == 0:
+				if vm['vmname'] not in res_dict and len(res_dict[vm['vmname']]['disk_list']) == 0:
 					res_dict.pop(vm['vmname'],None)
 	except Exception as e:
 		error = "Error in VMware calculation - "+str(e) 
