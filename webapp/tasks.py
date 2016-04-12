@@ -7,7 +7,10 @@ session=requests.Session()
 session.verify= False #disables SSL certificate verification
 session.auth=('juice','tcs_juice')
 session.headers.update({'Accept': 'application/json', 'Content-Type': 'application/json'})
-baseUri='https://chdcovmm01.tricorems.com:7002/ovm/core/wsapi/rest'
+
+baseUri1='https://10.62.100.88:7002/ovm/core/wsapi/rest'
+baseUri2='https://10.66.100.67:7002/ovm/core/wsapi/rest'
+
 
 inf_session = requests.Session()
 inf_session.auth=('juice','Svc-ju1c3') # supply auth info
@@ -27,30 +30,41 @@ celery = Celery('create_json', broker='amqp://guest@localhost//')
 @celery.task()
 def create_json():
 	# Saving the json data to respective files for OVM
-	Vm = session.get(baseUri+'/Vm')
+	Vm1 = session.get(baseUri1+'/Vm')
+	Vm2 = session.get(baseUri2+'/Vm')
+	Vm = Vm1.json()+Vm2.json()
 	with open('JSON/vm.json', 'w') as outfile:
-	    json.dump(Vm.json(), outfile)
-	
-	Server = session.get(baseUri+'/Server')
+		json.dump(Vm, outfile)
+
+	Server1 = session.get(baseUri1+'/Server')
+	Server2 = session.get(baseUri2+'/Server')
+	Server = Server1.json()+Server2.json()
 	with open('JSON/server.json', 'w') as outfile:
-	    json.dump(Server.json(), outfile)
-	
-	Repo = session.get(baseUri+'/Repository')
+		json.dump(Server, outfile)
+
+	Repo1 = session.get(baseUri1+'/Repository')
+	Repo2 = session.get(baseUri2+'/Repository')
+	Repo = Repo1.json()+Repo2.json()
 	with open('JSON/repo.json', 'w') as outfile:
-	    json.dump(Repo.json(), outfile)
+		json.dump(Repo, outfile)
 
-	StorageElem = session.get(baseUri+'/StorageElement')
+	StorageElem1 = session.get(baseUri1+'/StorageElement')
+	StorageElem2 = session.get(baseUri2+'/StorageElement')
+	StorageElem = StorageElem1.json()+StorageElem2.json()
 	with open('JSON/storagelem.json', 'w') as outfile:
-		json.dump(StorageElem.json(), outfile)
+		json.dump(StorageElem, outfile)
 
-	VirtualDisk = session.get(baseUri+'/VirtualDisk')
+	VirtualDisk1 = session.get(baseUri1+'/VirtualDisk')
+	VirtualDisk2 = session.get(baseUri2+'/VirtualDisk')
+	VirtualDisk = VirtualDisk1.json()+VirtualDisk2.json()
 	with open('JSON/virtualdisk.json', 'w') as outfile:
-		json.dump(VirtualDisk.json(), outfile)
+		json.dump(VirtualDisk, outfile)
 
-	VmDiskMapping = session.get(baseUri+'/VmDiskMapping')
+	VmDiskMapping1 = session.get(baseUri1+'/VmDiskMapping')
+	VmDiskMapping2 = session.get(baseUri2+'/VmDiskMapping')
+	VmDiskMapping = VmDiskMapping1.json() + VmDiskMapping2.json()
 	with open('JSON/vmdiskmapping.json', 'w') as outfile:
-		json.dump(VmDiskMapping.json(), outfile)
-
+		json.dump(VmDiskMapping, outfile)
 	exit()
 	
 	

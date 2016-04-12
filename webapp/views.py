@@ -27,7 +27,7 @@ def get_result_usage(cust_acronym=[],server = [], server_acronym = ''):
             ovm_result,ovm_usage,ovm_error = get_ovm(hostlist)
             vmware_result,vmware_usage,vmware_error = get_vmware(hostlist)
             par3_result,par3_usage,par3_error = get_3par(hostlist)
- 
+            
             result.append(ovm_result)
             result.append(infini_result)
             result.append(par3_result)
@@ -36,9 +36,17 @@ def get_result_usage(cust_acronym=[],server = [], server_acronym = ''):
             for res in result:
                 for key,value in res.items():
                     if key not in res_dict:
-                        res_dict[key] = {'disk_list':[],'total_size':0}
+                        res_dict[key] = {'disk_list':[],'total_size':0,'vm_name':''}
                     res_dict[key]['disk_list']+= res[key]['disk_list']
                     res_dict[key]['total_size'] += res[key]['total_size']
+                    res_dict[key]['source'] = res[key]['source']
+                    if res[key]['source'] == 'OVM': 
+                        res_dict[key]['server'] = res[key]['servername']
+                    elif res[key]['source'] == 'VMware':
+                        res_dict[key]['server'] = res[key]['vmhost']
+                    else:
+                        res_dict[key]['server'] = key
+                    res_dict[key]['vm_name'] = res[key]['vm_name'] if 'vm_name' in res[key] else ''
             usage = ovm_usage+infini_usage+par3_usage+vmware_usage
 
             if len(ovm_error) > 0:

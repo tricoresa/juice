@@ -40,7 +40,7 @@ def get_vmware(vmlist):
 			if 'vmname' in vm:
 				if  vm['vmname'] not in res_dict:
 					res_dict[vm['vmname']] = {}
-					res_dict[vm['vmname']]['VMware'] = 1
+					res_dict[vm['vmname']]['source'] = 'VMware'
 					res_dict[vm['vmname']]['vmhost'] = vm['vmhost']
 					res_dict[vm['vmname']]['vm_name'] = vm['vmname']
 					res_dict[vm['vmname']]['total_size'] = 0

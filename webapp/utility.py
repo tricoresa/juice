@@ -94,12 +94,12 @@ def applyfilter(cust_acronym_list=[],server=[],server_acronym=''):
 	hostlist = []
 	for vm in vmdata:
 		for cust_grp_acronym in cust_acronym_list:
-			if cust_grp_acronym != '' and  cust_grp_acronym.lower() in vm['id']['name'].lower() and vm not in hostlist:
+			if vm.get('id').get('name') and cust_grp_acronym != '' and  cust_grp_acronym.lower() in vm['id']['name'].lower() and vm not in hostlist:
 				hostlist.append(vm)
 		if len(server) != 0 :
-			if vm['id']['name'] in server and vm not in hostlist:
+			if vm.get('id').get('name') and vm['id']['name'] in server and vm not in hostlist:
 				hostlist.append(vm)
-		if server_acronym != '' and server_acronym.lower() in vm['id']['name'].lower() and vm not in hostlist:
+		if vm.get('id').get('name') and server_acronym != '' and server_acronym.lower() in vm['id']['name'].lower() and vm not in hostlist:
 			hostlist.append(vm)
 	for host in infini_host_data:#['result']:
 		for cust_grp_acronym in cust_acronym_list:
@@ -212,15 +212,17 @@ def get_ovm(vlist):
 			if not serverId:
 				continue;
 			servername = serverId.get('name') if serverId else 'None'
-			if serverId['name'] not in  res_dict:
-				res_dict[servername] = {}
-				res_dict[servername] ['physicalist']  = []
-				res_dict[servername]['virtualist'] = []
-				res_dict[servername]['total_size'] = 0
-
+			vmname = v['id']['name']
+			if vmname not in  res_dict:
+				res_dict[vmname] = {}
+				res_dict[vmname]['source'] = 'OVM'
+				res_dict[vmname]['vm_name'] = vmname
+				res_dict[vmname] ['physicalist']  = []
+				res_dict[vmname]['virtualist'] = []
+				res_dict[vmname]['disk_list'] = []
+				res_dict[vmname]['total_size'] = 0
+				res_dict[vmname]['servername'] = servername
 			id = v['id']['value']
-			res_dict[servername]['vmname'] = v['id']['name']
-
 			for disk in vmdiskmapping_data:
 				if disk['vmId']['value'] == id and disk['storageElementId']!= None:
 					diskname =  disk.get('storageElementId').get('name') if disk.get('storageElementId').get('name') else 'None'
@@ -244,15 +246,15 @@ def get_ovm(vlist):
 						if not any(substr in diskname.lower() for substr in exclude_list):
 							#for total vm size
 							total_usage += int(physical_disk_size) 
-							res_dict[servername]['total_size'] += int(physical_disk_size)
+							res_dict[vmname]['total_size'] += int(physical_disk_size)
 							physical_dict['total'] += int(physical_disk_size)
 						physical_dict['repo_name'] = ""
-						res_dict[servername]['physicalist'].append(physical_dict)
+						res_dict[vmname]['physicalist'].append(physical_dict)
 				elif  disk['vmId']['value'] == id and disk.get('virtualDiskId') != None:
 					diskname = disk.get('virtualDiskId').get('name') if disk.get('virtualDiskId').get('name') else 'None'
 					diskid = disk.get('virtualDiskId').get('value')
 					if diskid not in disk_list:
-						# remove duplicate virtual_lists from OVM report
+						#------------- remove duplicate virtual_lists from OVM report
 						disk_list.append(diskid)
 						virtual_dict = {}
 						virtual_dict['name'] = diskname
@@ -260,7 +262,7 @@ def get_ovm(vlist):
 						virtualdisk_id = diskid
 						virtual_dict['id'] = virtualdisk_id
 						virtual_dict['total'] = 0
-						#for virtual disk size and repo name
+						#------------for virtual disk size and repo name
 						for virtualdisk in virtualdiskdata:
 							if virtualdisk['id']['value'] == str(virtualdisk_id):
 								virtualdiskObj = virtualdisk
@@ -269,15 +271,14 @@ def get_ovm(vlist):
 						if  virtualdiskObj.get('repositoryId'):
 							virtual_dict['repo_name'] = virtualdiskObj['repositoryId']['name']
 						if not any(substr in diskname.lower() for substr in exclude_list):
-							#for total vm size
+							#----------------for total vm size
 							total_usage += int(virtual_disk_size) 
-							res_dict[servername]['total_size'] += int(virtual_disk_size)
+							res_dict[vmname]['total_size'] += int(virtual_disk_size)
 							virtual_dict['total'] += int(virtual_disk_size)
-						res_dict[servername]['virtualist'].append(virtual_dict)
-			res_dict[servername]['vm_name']= v['id']['name']
-			res_dict[servername]['disk_list']  = res_dict[servername]['virtualist']+res_dict[servername]['physicalist']
-			if servername in res_dict and len(res_dict[servername]['disk_list']) == 0:
-				res_dict.pop(servername,None)
+						res_dict[vmname]['virtualist'].append(virtual_dict)
+			res_dict[vmname]['disk_list']  = res_dict[vmname]['virtualist']+res_dict[vmname]['physicalist']
+			#if vmname in res_dict and len(res_dict[vmname]['disk_list']) == 0:
+			#	res_dict.pop(vmname,None)
 	except Exception as e:
 		error  = "Error in OVM calculation - "+str( e)
 	return (res_dict,total_usage,error)

@@ -50,6 +50,7 @@ def get_infini(hostlist,limit=1000):
                     if 'luns' in host:
                         if 'name' in host and host['name'] not in res_dict:
                             res_dict[ host['name']] = {}
+                            res_dict[ host['name']]['source'] = 'Infinibox'
                             res_dict[host['name']]['total_size'] = 0
                             res_dict[host['name']]['disk_list'] = []
                         luns=host['luns']

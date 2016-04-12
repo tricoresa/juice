@@ -44,6 +44,7 @@ def get_3par(hostlist):
 				if len(vlunlist) > 0:
 					if server['name'] not in res_dict:
 						res_dict[server['name']] = {}
+						res_dict[server['name']]['source'] = '3Par'
 						res_dict[server['name']]['volume_list'] = []
 						res_dict[server['name']]['total_size'] = 0
 						res_dict[server['name']]['disk_list'] = []	

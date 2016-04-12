@@ -86,7 +86,7 @@ $(function ()
     <h4>Total disk usage =  {{total_usage}} </h4>
 	{% for key, res in resdict.items %}
       <ul> 
-        <li><h5><u>{{res.vm_name}}</u> (server- <b>{%if res.VMware == 1 %}{{res.vmhost}}{%else%}{{key}}{%endif%}</b>)</h5>  Total Disk size = {{res.total_size}}</li>
+        <li><h5><u>{{res.vm_name}}</u> (server- <b>{{res.server}}</b>)</h5>  Total Disk size = {{res.total_size}}</li>
        </ul>
        <table class='table table-bordered table-hover table-striped' style="table-layout: fixed; word-wrap: break-word;">
          <tr class="text-center">
