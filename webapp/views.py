@@ -116,24 +116,27 @@ class Summary(View):
 							for vm_json in elem['physicalist']:
 								res_dict['physical_disk_size'] += vm_json['total']
 					# ------------- Processing Infini result
-					infini_res,infini_usage,error = get_infini(vlist,limit)
-					for key,res in infini_res.items():
+					infini_res,infini_usage,error = get_infini(vlist)
+					res_dict['physical_disk_size'] += infini_usage
+					"""for key,res in infini_res.items():
 						for elem in res.get('disk_list'):
 							res_dict['physical_disk_size'] += elem['size']
 							res_dict['size'] += elem['size']
-					
+					"""
 					# ------------ Processing par3 result
 					par3_result,par3_usage,error = get_3par(vlist)
-					for key,res in par3_result.items():
+					res_dict['physical_disk_size'] += par3_usage
+					"""for key,res in par3_result.items():
 						for elem in res.get('disk_list'):
 							res_dict['physical_disk_size'] += elem['size']
 							res_dict['size'] += elem['size']
-					
+					"""
 					# ---------- Processing vmware result
 					vmware_result,vmware_usage,error= get_vmware(vlist)
-					for key,res in vmware_result.items():
+					res_dict['virtual_disk_size'] += vmware_usage
+					"""for key,res in vmware_result.items():
 						for elem in res.get('disk_list'):
-							res_dict['virtual_disk_size'] += elem['size']
+							res_dict['virtual_disk_size'] += elem['size']"""
 					res_dict['size'] = res_dict['virtual_disk_size']+res_dict['physical_disk_size']
 				grp_list.append(res_dict)
 		except Exception as e:

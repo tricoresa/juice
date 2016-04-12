@@ -276,7 +276,7 @@ def get_ovm(vlist):
 						res_dict[servername]['virtualist'].append(virtual_dict)
 			res_dict[servername]['vm_name']= v['id']['name']
 			res_dict[servername]['disk_list']  = res_dict[servername]['virtualist']+res_dict[servername]['physicalist']
-			if len(res_dict[servername]['disk_list']) == 0:
+			if servername in res_dict and len(res_dict[servername]['disk_list']) == 0:
 				res_dict.pop(servername,None)
 	except Exception as e:
 		error  = "Error in OVM calculation - "+str( e)
