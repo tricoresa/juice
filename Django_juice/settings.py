@@ -11,10 +11,11 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 """
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+from __future__ import absolute_import
 import os
 import sys
-import djcelery
-djcelery.setup_loader()
+#Cjk import djcelery
+#Cjk djcelery.setup_loader()
 from celery.schedules import crontab
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATIC_PATH = os.path.join(BASE_DIR,'static')
@@ -56,15 +57,16 @@ MIDDLEWARE_CLASSES = (
 )
 
 ROOT_URLCONF = 'Django_juice.urls'
-BROKER_URL = 'amqp://guest:guest@localhost:5672//'
+#Cjk BROKER_URL = 'amqp://guest:guest@localhost:5672//'
 CELERY_RESULT_BACKEND = 'amqp://'
 CELERY_DEFAULT_QUEUE = 'default'
-CELERY_TIMEZONE = 'UTC'
+CELERY_TIMEZONE = 'EST'
 CELERY_IMPORTS = ('webapp.tasks')
+CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
 CELERYBEAT_SCHEDULE = {
-    'add-every-60-seconds': {
+    'juice_daily': {
         'task': 'webapp.tasks.create_json',
-        'schedule': crontab(hour=0, minute=0),
+        'schedule': crontab(hour=7, minute=30),
         'args': ()
     },
 }
@@ -102,13 +104,12 @@ DATABASES = {
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'UTC'
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'EST'
 
 USE_I18N = True
 
