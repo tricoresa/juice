@@ -94,35 +94,66 @@ def applyfilter(cust_acronym_list=[],server=[],server_acronym=''):
 	hostlist = []
 	for vm in vmdata:
 		for cust_grp_acronym in cust_acronym_list:
-			if vm.get('id').get('name') and cust_grp_acronym != '' and  cust_grp_acronym.lower() in vm['id']['name'].lower() and vm not in hostlist:
-				hostlist.append(vm)
+			cust_grp_acronym = cust_grp_acronym.strip()
+			if vm.get('id').get('name'):
+				if cust_grp_acronym != '' and '!' not in cust_grp_acronym:
+					if cust_grp_acronym.lower() in vm['id']['name'].lower() and vm not in hostlist:
+						hostlist.append(vm)
+				else:
+					if '!' in cust_grp_acronym and  cust_grp_acronym[1:]  in vm['id']['name'].lower() and vm in hostlist:
+						hostlist.remove(vm)
 		if len(server) != 0 :
 			if vm.get('id').get('name') and vm['id']['name'] in server and vm not in hostlist:
 				hostlist.append(vm)
 		if vm.get('id').get('name') and server_acronym != '' and server_acronym.lower() in vm['id']['name'].lower() and vm not in hostlist:
 			hostlist.append(vm)
+
+
+
 	for host in infini_host_data:#['result']:
 		for cust_grp_acronym in cust_acronym_list:
-			if cust_grp_acronym != '' and cust_grp_acronym.lower() in host['name'].lower() and host not in hostlist:
-				hostlist.append(host)
+			cust_grp_acronym = cust_grp_acronym.strip()
+			if 'name' in host:
+				if cust_grp_acronym != '' and '!' not in cust_grp_acronym:
+					if  cust_grp_acronym.lower() in host['name'].lower() and host not in hostlist:
+						hostlist.append(host)
+				else:
+					if '!' in cust_grp_acronym and cust_grp_acronym[1:] in host['name'].lower() and host in hostlist:
+						hostlist.remove(host)
 		if  len(server) != 0 :
 			if str(host['name']) in server and host not in hostlist:
 				hostlist.append(host)
 		if server_acronym != '' and server_acronym.lower() in host['name'].lower() and host not in hostlist:
 			hostlist.append(host)
+
+
 	for par3_host in par3Host_data :#['members']:
 		for cust_grp_acronym in cust_acronym_list:
-			if 'name' in par3_host and  cust_grp_acronym != '' and cust_grp_acronym.lower() in par3_host['name'].lower() and par3_host not in hostlist:
-				hostlist.append(par3_host)
+			cust_grp_acronym = cust_grp_acronym.strip()
+			if 'name' in par3_host:
+				if cust_grp_acronym != '' and '!' not in cust_grp_acronym:
+					if  cust_grp_acronym.lower() in par3_host['name'].lower() and par3_host not in hostlist:
+						hostlist.append(par3_host)
+				else:
+					if '!' in cust_grp_acronym and cust_grp_acronym[1:] in par3_host['name'].lower() and par3_host in hostlist:
+                                                hostlist.remove(par3_host)
 		if len(server) != 0:
 			if 'name' in par3_host and str(par3_host['name']) in server and par3_host not in hostlist:
 				hostlist.append(par3_host)
 		if 'name' in par3_host and server_acronym != '' and server_acronym.lower() in par3_host['name'].lower() and par3_host not in hostlist:
 			hostlist.append(par3_host)
+
+
 	for vmware in vmware_data:
 		for cust_grp_acronym in cust_acronym_list:
-			if cust_grp_acronym != '' and cust_grp_acronym.lower() in vmware['vmname'].lower() and vmware not in hostlist:
-				hostlist.append(vmware)	
+			cust_grp_acronym = cust_grp_acronym.strip()
+			if 'vmname' in vmware:
+				if cust_grp_acronym != '' and '!' not in cust_grp_acronym:
+					if  cust_grp_acronym.lower() in vmware['vmname'].lower() and vmware not in hostlist:
+						hostlist.append(vmware)
+				else:
+					if '!' in cust_grp_acronym and cust_grp_acronym[1:] in vmware['vmname'].lower() and vmware in hostlist:
+                                                hostlist.remove(vmware)
 		if len(server) != 0 :
 			if vmware['vmname'] in server and vmware not in hostlist:
 				hostlist.append(vmware)

@@ -65,8 +65,6 @@ def create_json():
 	VmDiskMapping = VmDiskMapping1.json() + VmDiskMapping2.json()
 	with open('JSON/vmdiskmapping.json', 'w') as outfile:
 		json.dump(VmDiskMapping, outfile)
-	exit()
-	
 	
 	
 	# Saving the JSON data for INFINIBOX
@@ -196,6 +194,7 @@ def create_json():
 	objview = content.viewManager.CreateContainerView(content.rootFolder,[vim.VirtualMachine],True)
 	for vm in objview.view:
 		repo_dict = {}
+		repo_dict['vmhost'] = vm.runtime.host.name
 		repo_dict['vmname'] = vm.config.name
 		repo_dict['vmware_disklist'] = []
 		hardware = vm.config.hardware
