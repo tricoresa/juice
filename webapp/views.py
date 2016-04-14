@@ -341,7 +341,6 @@ class CustomerGroupList(View):
 			res_dict['customername']  = customer.name
 			acronym = customer.acronym
 			hostlist = get_servernames(acronym.split(','))
-			print (customer.name, '- ', len(hostlist))
 			res_dict['vmlist'] = hostlist 
 			reslist.append(res_dict)
 		return render(request,'webapp/customer_grplist.html',{'active_user':active_user,'reslist':reslist,'pagination':pagination_res,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})
