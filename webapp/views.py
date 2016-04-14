@@ -22,12 +22,12 @@ def get_result_usage(cust_acronym=[],server = [], server_acronym = ''):
         usage = 0
         error = []
         hostlist  = applyfilter(cust_acronym,server,server_acronym)
+        host_count = 0
         if len(hostlist)>0:
             infini_result,infini_usage,infini_error = get_infini(hostlist)
             ovm_result,ovm_usage,ovm_error = get_ovm(hostlist)
             vmware_result,vmware_usage,vmware_error = get_vmware(hostlist)
             par3_result,par3_usage,par3_error = get_3par(hostlist)
-            
             result.append(ovm_result)
             result.append(infini_result)
             result.append(par3_result)
@@ -48,7 +48,7 @@ def get_result_usage(cust_acronym=[],server = [], server_acronym = ''):
                         res_dict[key]['server'] = key
                     res_dict[key]['vm_name'] = res[key]['vm_name'] if 'vm_name' in res[key] else ''
             usage = ovm_usage+infini_usage+par3_usage+vmware_usage
-
+            host_count = len(res_dict)
             if len(ovm_error) > 0:
                  error.append(ovm_error) 
             if len(infini_error) > 0:
@@ -59,7 +59,7 @@ def get_result_usage(cust_acronym=[],server = [], server_acronym = ''):
                 error.append(vmware_error)
         else:
             res_dict,usage,error = {},0,''
-        return res_dict,usage,error
+        return res_dict,host_count,usage,error
 
 # ------ Module for unmapped Disks and VM listing  --------#
 class UnmappedDisk(View):	
@@ -227,6 +227,7 @@ class Dashboard(View):
 		newserverlist = []
 		cust_acronym = []
 		res_dict = {}
+		host_count = 0
 		try:
 			if custgrp > 0:
 				cust_acronym = JuiceGroupnames.objects.get(groupnameid = custgrp).acronym 
@@ -246,9 +247,9 @@ class Dashboard(View):
 			newserverlist = set(serverlist)
 			
 			if active_user == 1 :
-				res_dict,usage,error = get_result_usage(cust_acronym,server,server_acronym)	
+				res_dict,host_count,usage,error = get_result_usage(cust_acronym,server,server_acronym)	
 			else:
-				res_dict,usage,error = get_result_usage(cust_acronym)
+				res_dict,host_count,usage,error = get_result_usage(cust_acronym)
 			total_usage = usage
 			if len(error)  > 0:
 				error_notify = str(error)
@@ -259,7 +260,7 @@ class Dashboard(View):
 					empty_notify = "No result matching the filters"
 		except Exception as e:
 			error_notify = "Error in Report caluclation - "+str(e)
-		return render(request,'webapp/dashboard.html',{'error_notify':error_notify,'empty_notify':empty_notify,'resdict_csv':res_dict,'exclude_list':exclude_list,'resdict':OrderedDict(sorted(res_dict.items(), key=lambda t: t[0])),'active_user':active_user,'serverlist':newserverlist,'cust_grp':custgrp,'customergrouplist':cust_grplist,'total_usage':total_usage,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})
+		return render(request,'webapp/dashboard.html',{'host_count':host_count,'error_notify':error_notify,'empty_notify':empty_notify,'resdict_csv':res_dict,'exclude_list':exclude_list,'resdict':OrderedDict(sorted(res_dict.items(), key=lambda t: t[0])),'active_user':active_user,'serverlist':newserverlist,'cust_grp':custgrp,'customergrouplist':cust_grplist,'total_usage':total_usage,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})
 
 	
 	
@@ -315,12 +316,9 @@ class CustomerGroupList(View):
 				res_dict =  {}
 				res_dict['customergrp_id'] = customer.groupnameid
 				res_dict['customername']  = customer.name
-				vmgroupobj = JuiceGroupvm.objects.filter(groupid = customer.groupnameid)
-				hostidlist = []
-				for vm in vmgroupobj:
-					hostidlist.append(vm.vm)
-				#ovm_vmlist, infini_serverlist ,par3_serverlist= get_servernames('',hostidlist)
-				res_dict['vmlist'] =set(hostidlist)# ovm_vmlist+infini_serverlist+par3_serverlist)
+				acronym = customer.acronym
+				hostlist = get_servernames(acronym.split(','))
+				res_dict['vmlist'] = hostlist 
 				reslist.append(res_dict)
 		except Exception as e:
 			print ("Customer Grouplist error - ",e)
@@ -341,12 +339,10 @@ class CustomerGroupList(View):
 			res_dict =  {}
 			res_dict['customergrp_id'] = customer.groupnameid
 			res_dict['customername']  = customer.name
-			vmgroupobj = JuiceGroupvm.objects.filter(groupid = customer.groupnameid)
-			hostidlist = []
-			for vm in vmgroupobj:
-				hostidlist.append(vm.vm)
-			#ovm_vmlist, infini_serverlist ,par3_serverlist= get_servernames('',hostidlist)
-			res_dict['vmlist'] =set(hostidlist)# ovm_vmlist+infini_serverlist+par3_serverlist)
+			acronym = customer.acronym
+			hostlist = get_servernames(acronym.split(','))
+			print (customer.name, '- ', len(hostlist))
+			res_dict['vmlist'] = hostlist 
 			reslist.append(res_dict)
 		return render(request,'webapp/customer_grplist.html',{'active_user':active_user,'reslist':reslist,'pagination':pagination_res,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})
 
@@ -366,19 +362,19 @@ class CustomerGroup(View):
 		try:
 			ovm_vmlist = []
 			infini_vmlist = []
-			ovm_vmlist = get_ovm_serverlist()
-			infini_vmlist = get_infini_serverlist()
+			ovm_serverlist = get_ovm_serverlist()
+			infini_serverlist = get_infini_serverlist()
 			par3_serverlist = get_3par_serverlist()
 			vmware_serverlist = get_vmware_serverlist()
-			vmlist =set( ovm_vmlist+infini_vmlist+par3_serverlist+vmware_serverlist)
+			
+
+			vmlist =set( ovm_serverlist+infini_serverlist+par3_serverlist+vmware_serverlist)
 			if groupid:
 				groupobj = JuiceGroupnames.objects.filter(groupnameid = groupid)
 				for elem in groupobj:
 					group_name = elem.name
 					group_acronym = elem.acronym
-					groupvmobj = JuiceGroupvm.objects.filter(groupid=groupid)
-					for vm in groupvmobj:
-						group_vmlist.append(vm.vm)
+					group_vmlist = get_servernames(elem.acronym.split(','))
 		except Exception as e:
 			print ("Customer Group Creation form error - ", e)
 			error_msg = "Exception handled in Customer group creation form"

@@ -25,9 +25,21 @@
 
 	function select_vm() {
 		//$('select#filter_select option').removeAttr("selected");
-		var x = $("#acronym").val();
-		$('#filter_select option[name*="'+x+'"]').prop('selected',true);
-		moveItems('#filter_select','#filter_select3')
+		var x = $("#acronym").val(); 
+		var acronym_array = x.split(',');
+		for(var i = 0; i < acronym_array.length; i++) {
+			if (acronym_array[i].indexOf('!') == -1){
+				$('#filter_select option[name*="'+acronym_array[i].trim()+'"]').prop('selected',true);
+				moveItems('#filter_select','#filter_select3')
+				$('#filter_select3 option[name*="'+acronym_array[i].trim()+'"]').prop('selected',false);
+			}
+			else{
+				$('#filter_select3 option[name*="'+acronym_array[i].trim().substring(1)+'"]').prop('selected',true);
+	                        moveItems('#filter_select3','#filter_select')
+				$('#filter_select option[name*="'+acronym_array[i].trim()+'"]').prop('selected',false);
+
+			}
+		}
 	};
 
 </script>

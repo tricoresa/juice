@@ -83,6 +83,7 @@ $(function ()
 	</form>
     </div>
     {%if error_notify == ''%}
+    <h4>Server/VM count =  {{host_count}} </h4>
     <h4>Total disk usage =  {{total_usage}} </h4>
 	{% for key, res in resdict.items %}
       <ul> 

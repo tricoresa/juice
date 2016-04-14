@@ -162,28 +162,49 @@ def applyfilter(cust_acronym_list=[],server=[],server_acronym=''):
 	return  hostlist
 
 #--------Module to get server/host names from all hosts across OVM/infini/3par/VMWare ------#
-def get_servernames(cust_grp = "",hostidlist = []):
-	ovm_vmlist = []
-	infini_serverlist = []
-	par3_serverlist = []
+def get_servernames(cust_acronym_list = []):
+	hostlist = []
 	for vm in vmdata:
-		if cust_grp != '' and  cust_grp.lower() in vm['id']['name'].lower():
-			ovm_vmlist.append(vm['id']['name'])
-		elif len(hostidlist) > 0 and vm['id']['value'] in hostidlist:
-			ovm_vmlist.append(vm['id']['name'])	
-	for server in infini_host_data : #['result']:		
-		if cust_grp != '' and cust_grp.lower() in server['name'].lower():
-			infini_serverlist.append(server['name'])
-		elif len(hostidlist) > 0 and str(server['id']) in hostidlist:
-			infini_serverlist.append(server['name'])	
-	for host in par3Host_data:#['members']:
-		if 'id' in host and 'name' in host:
-			if cust_grp != '' and cust_grp.lower() in host['name'].lower():
-				par3_serverlist.append(host['name'])
-			elif len(hostidlist) > 0 and str(host['id']) in hostidlist:
-				par3_serverlist.append(host['name'])	
-	return ( ovm_vmlist,infini_serverlist,par3_serverlist)
-	
+		for cust_grp_acronym in cust_acronym_list:
+			cust_grp_acronym = cust_grp_acronym.strip()
+			if vm.get('id').get('name'):
+				if cust_grp_acronym != '' and '!' not in cust_grp_acronym:
+					if cust_grp_acronym.lower() in vm['id']['name'].lower() and vm['id']['name'] not in hostlist:
+						hostlist.append(vm['id']['name'])
+				else:
+					if '!' in cust_grp_acronym and  cust_grp_acronym[1:]  in vm['id']['name'].lower() and vm['id']['name'] in hostlist:
+						hostlist.remove(vm['id']['name'])
+	for host in infini_host_data:#['result']:
+		for cust_grp_acronym in cust_acronym_list:
+			cust_grp_acronym = cust_grp_acronym.strip()
+			if 'name' in host:
+				if cust_grp_acronym != '' and '!' not in cust_grp_acronym:
+					if  cust_grp_acronym.lower() in host['name'].lower() and host['name'] not in hostlist:
+						hostlist.append(host['name'])
+				else:
+					if '!' in cust_grp_acronym and cust_grp_acronym[1:] in host['name'].lower() and host['name'] in hostlist:
+						hostlist.remove(host['name'])	
+	for par3_host in par3Host_data :#['members']:
+		for cust_grp_acronym in cust_acronym_list:
+			cust_grp_acronym = cust_grp_acronym.strip()
+			if 'name' in par3_host:
+				if cust_grp_acronym != '' and '!' not in cust_grp_acronym:
+					if  cust_grp_acronym.lower() in par3_host['name'].lower() and par3_host['name'] not in hostlist:
+						hostlist.append(par3_host['name'])
+				else:
+					if '!' in cust_grp_acronym and cust_grp_acronym[1:] in par3_host['name'].lower() and par3_host['name'] in hostlist:
+						hostlist.remove(par3_host['name'])
+	for vmware in vmware_data:
+		for cust_grp_acronym in cust_acronym_list:
+			cust_grp_acronym = cust_grp_acronym.strip()
+			if 'vmname' in vmware:
+				if cust_grp_acronym != '' and '!' not in cust_grp_acronym:
+					if  cust_grp_acronym.lower() in vmware['vmname'].lower() and vmware['vmname'] not in hostlist:
+						hostlist.append(vmware['vmname'])
+				else:
+					if '!' in cust_grp_acronym and cust_grp_acronym[1:] in vmware['vmname'].lower() and vmware['vmname'] in hostlist:
+						hostlist.remove(vmware['vmname'])
+	return hostlist
 # --- Details of OVM repositories ----#
 def get_repo_detail(repoid):
 	repoFileIds = session.get(baseUri+'/Repository/'+str(repoid)+'/FileSystem')
