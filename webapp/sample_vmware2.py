@@ -26,7 +26,8 @@ def main():
    objview = content.viewManager.CreateContainerView(content.rootFolder,[vim.VirtualMachine],True)
    for vm in objview.view: 
        repo_dict = {}
-       repo_dict['vmhost'] = vm.runtime.host.name
+       repo_dict['vmhost'] = vm.runtime.host.name or ''
+       repo_dict['ip'] =  '10.62.100.15'
        repo_dict['vmname'] = vm.config.name
        repo_dict['vmware_disklist'] = []
        hardware = vm.config.hardware
@@ -50,7 +51,8 @@ def main():
    objview = content.viewManager.CreateContainerView(content.rootFolder,[vim.VirtualMachine],True)
    for vm in objview.view:
        repo_dict = {}
-       repo_dict['vmhost'] = vm.runtime.host.name
+       repo_dict['vmhost'] = vm.runtime.host.name or ''
+       repo_dict['ip'] = '10.66.100.15' 
        repo_dict['vmname'] = vm.config.name
        repo_dict['vmware_disklist'] = []
        hardware = vm.config.hardware

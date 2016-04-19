@@ -58,7 +58,7 @@ session.auth=('juice','tcs_juice')
 session.headers.update({'Accept': 'application/json', 'Content-Type': 'application/json'})
 
 baseUri='https://smdcovmm01.tricorems.com:7002/ovm/core/wsapi/rest'
-exclude_list = ['_root','system','swap']
+exclude_list = []
 def  login_required(user):
 	if  not user.is_authenticated()  or  user.is_anonymous():
 		return True
@@ -228,27 +228,41 @@ def get_ovm_serverlist():
 
 # ------------- List of unmapped VM in OVM ----------- #
 def get_unmapped_ovm():
-	reslist = []
+	resdict = {}
 	error = ''
 	try:
 		for virtual in virtualdiskdata:
-			res_dict = {}
 			if virtual['vmDiskMappingIds'] == []:
+				if virtual['uri'] not in resdict:
+					resdict[virtual['uri']] = {}
+					resdict[virtual['uri']]['source'] = 'OVM'
+					resdict[virtual['uri']]['total_size'] = 0
+					resdict[virtual['uri']]['disk_list'] = []
+				res_dict = {}
 				res_dict['name'] = virtual['name']
 				res_dict['id'] = virtual['id']['value']
-				res_dict['size']= bytesto(virtual['size'],'g')
-				reslist.append(res_dict)
+				size = bytesto(virtual['size'],'g')
+				res_dict['size']= size
+				resdict[virtual['uri']]['total_size'] += size
+				resdict[virtual['uri']]['disk_list'].append(res_dict)
 		for storage in storagelemdata:
-			res_dict = {}
 			if storage['vmDiskMappingIds'] == []:
+				if storage['uri'] not in resdict:
+					resdict[storage['uri']] = {}
+					resdict[storage['uri']]['total_size'] = 0
+					resdict[storage['uri']]['source'] = 'OVM'
+					resdict[storage['uri']]['disk_list'] = []
+				res_dict = {}
 				res_dict['name'] = storage['name']
 				res_dict['id'] = storage['id']['value']
-				res_dict['size']= bytesto(storage['size'],'g')
-				reslist.append(res_dict)
+				size = bytesto(storage['size'],'g')
+				res_dict['size']= size
+				resdict[storage['uri']]['total_size'] += size
+				resdict[storage['uri']]['disk_list'].append(res_dict)
 	except  Exception as e:
 		error = "Error in OVM calculation - "+str(e)
 
-	return (reslist,error)
+	return (resdict,error)
 
 # -------------Get VM from OVM and its respective Virtual and physical disks/repo details on the basis of selected VMs ------ #
 def get_ovm(vlist):

@@ -4,7 +4,7 @@ from webapp.utility import bytesto,par3Host_data,par3Volume_data,par3Vlun_data
 # -----Get list of unmapped 3 Par volumes ----#
 def get_unmapped_3par():
 	error = ''
-	reslist = []
+	resdict = {}
 	try:
 		vol_list = []
 		vlun_wwnlist = []
@@ -14,16 +14,22 @@ def get_unmapped_3par():
 		for vol in par3Volume_data:
 			if vol['wwn'] not in  vlun_wwnlist and vol['wwn'] not in vol_list:
 				vol_list.append(vol['wwn'])
+				if vol['ip'] not in resdict:
+					resdict[vol['ip']] = {}
+					resdict[vol['ip']]['source'] = '3par'
+					resdict[vol['ip']]['total_size'] = 0
+					resdict[vol['ip']]['disk_list'] = []
 				vol_dict = {}
 				vol_dict['id'] = vol['id']
 				vol_dict['name'] = vol['name']
 				size = bytesto(vol['sizeMiB'],'k')
-				vol_dict['size'] =  str(size)+' gb'
+				vol_dict['size'] =  str(size)
 				vol_dict['WWN'] = vol['wwn']
-				reslist.append(vol_dict)
+				resdict[vol['ip']]['total_size'] += size
+				resdict[vol['ip']]['disk_list'].append(vol_dict)
 	except Exception as e:
 		error = str(e)
-	return reslist,error
+	return resdict,error
 
 # ------ List of 3par volumes and respective luns on the basis of selected list of 3par hosts ----- #				
 def get_3par(hostlist):

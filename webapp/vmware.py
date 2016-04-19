@@ -11,21 +11,28 @@ def get_vmware_serverlist():
 
 # ------ List of unmapped virtual machines------ #
 def get_unmapped_vmware():
-	reslist = []
+	resdict = {}
 	error = ''
 	try:
 		for vmware in vmware_data:
-			if vmware['vmhost'] == '':
+			if vmware['vmhost'] == '' or vmware['vmhost'] == None:
+				if vmware['ip'] not  in resdict:
+					resdict[vmware['ip']] = {}
+					resdict[vmware['ip']]['source'] = 'VMware'
+					resdict[vmware['ip']]['total_size']= 0
+					resdict[vmware['ip']]['disk_list']
 				vm_dict = {}
 				vm_dict['name'] = vmware['vmname']
 				capacity  = 0
 				for detail in vmware['vmware_disklist']:
+					vm_dict['repo'] = detail['reponame']
 					capacity += detail['capacity']
 				vm_dict['size'] = math.ceil(capacity)
-				reslist.append(vm_dict)
+				resdict[vmware['ip']]['total_size'] += capacity
+				resdict[vmware['ip']]['disk_list'].append(vm_dict)
 	except Exception as  e:
 		error = "Error in VMware calculation - "+str(e)
-	return (reslist,error)
+	return (resdict,error)
 	
 # ---- List out the VM and its disk/repo details on the basis of selected list of VMs ---- #		
 def get_vmware(vmlist):

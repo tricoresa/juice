@@ -79,12 +79,16 @@ $(function ()
 	<form id = "csvexport" class="form" role="form" action="/webapp/csvexport/" method="POST">	
 		{% csrf_token %}
 		<input type="hidden" id ="csvpost" name='resdict' value="" />
+		<input type="hidden" id ="hostcount" name='host_count' value={{host_count}} />
+		<input type="hidden" id ="totalusage" name='total_usage' value={{total_usage}} />	
 		<button type="submit" id="CSVbutton" class="btn btn-primary"> CSV Export</button>
 	</form>
     </div>
     {%if error_notify == ''%}
-    <h4>Server/VM count =  {{host_count}} </h4>
-    <h4>Total disk usage =  {{total_usage}} </h4>
+        <div class="row">
+	  <div class="col-sm-4" style="border:1px; width:inherit; background-color: #99CCFF;">Server/VM count  = {{host_count}}</div>
+	  <div class="col-sm-4" style="border:1px; width:inherit; background-color: #FFFF66;">Total Usage =  {{total_usage}}  </div>
+        </div>
 	{% for key, res in resdict.items %}
       <ul> 
         <li><h5><u>{{res.vm_name}}</u> (server- <b>{{res.server}}</b>)</h5>  Total Disk size = {{res.total_size}}</li>

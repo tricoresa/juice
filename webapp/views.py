@@ -67,19 +67,27 @@ class UnmappedDisk(View):
 		if login_required(request.user):
 			return redirect('/webapp/login?next='+request.path)
 		error_msg = ''
-		res_dict = {}
-		res_list = []
+		result = []
 		active_user = get_user_grp(request.user)
-		ovm_disk_list,error = get_unmapped_ovm()
-		res_dict['OVM'] = ovm_disk_list
-		infini_disk_list,error_msg = get_unmapped_infini()
-		res_dict ['infinibox'] = infini_disk_list
-		par3_disk_list,error = get_unmapped_3par()
-		res_dict['par3'] = par3_disk_list
-		vmware_disk_list,error_msg= get_unmapped_vmware()
-		res_dict['vmware'] = vmware_disk_list
-		res_list.append(res_dict)
-		return render(request,'webapp/unmapped.html',{'active_user':active_user,'error_msg':error_msg,'res_list':res_list,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})		
+		ovm_result,error = get_unmapped_ovm()
+		infini_result,error = get_unmapped_infini()
+		par3_result,error = get_unmapped_3par()
+		vmware_result,error= get_unmapped_vmware()
+		result.append(ovm_result)
+		result.append(infini_result)
+		result.append(par3_result)
+		result.append(vmware_result)
+		res_dict = {}
+		totalsize = 0
+		for res in result:
+			for key,value in res.items():
+				if key not in res_dict:
+					res_dict[key] = {'disk_list':[],'total_size':0,'vm_name':''}
+				res_dict[key]['disk_list']+= res[key]['disk_list']
+				res_dict[key]['total_size'] += res[key]['total_size']
+				res_dict[key]['source'] = res[key]['source']
+				totalsize += res_dict[key]['total_size'] 
+		return render(request,'webapp/unmapped.html',{'total_size':totalsize,'active_user':active_user,'error_msg':error,'res_dict':res_dict,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})		
 
 #---- Summary page lists out all the customer groups with the total disk usage.---#
 class Summary(View):
@@ -160,10 +168,16 @@ class CSVExport(View):
 			return redirect('/webapp/login?next='+request.path)
 		ajax = int(self.request.POST.get('ajax') or 0)
 		resdict = json.loads(self.request.POST.get('resdict'))
+		host_count = self.request.POST.get('host_count')
+		total_usage = self.request.POST.get('total_usage')
 		response = HttpResponse(content_type='text/csv')
 		response['Content-Disposition'] = 'attachment; filename=VMReport.csv'
 		writer = csv.writer(response, csv.excel)
 		response.write(u'\ufeff'.encode('utf8')) # BOM (optional...Excel needs it to open UTF-8 file properly)
+		writer.writerow([
+                        smart_str('Server count = '+host_count ),
+                        smart_str('Total disk usage = '+total_usage),
+		])
 		writer.writerow([
 			smart_str('VM Name'),
 			smart_str('Server Name'),
