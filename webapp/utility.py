@@ -100,7 +100,7 @@ def applyfilter(cust_acronym_list=[],server=[],server_acronym=''):
 					if cust_grp_acronym.lower() in vm['id']['name'].lower() and vm not in hostlist:
 						hostlist.append(vm)
 				else:
-					if '!' in cust_grp_acronym and  cust_grp_acronym[1:]  in vm['id']['name'].lower() and vm in hostlist:
+					if '!' in cust_grp_acronym and  cust_grp_acronym[1:].lower()  in vm['id']['name'].lower() and vm in hostlist:
 						hostlist.remove(vm)
 		if len(server) != 0 :
 			if vm.get('id').get('name') and vm['id']['name'] in server and vm not in hostlist:
@@ -118,7 +118,7 @@ def applyfilter(cust_acronym_list=[],server=[],server_acronym=''):
 					if  cust_grp_acronym.lower() in host['name'].lower() and host not in hostlist:
 						hostlist.append(host)
 				else:
-					if '!' in cust_grp_acronym and cust_grp_acronym[1:] in host['name'].lower() and host in hostlist:
+					if '!' in cust_grp_acronym and cust_grp_acronym[1:].lower() in host['name'].lower() and host in hostlist:
 						hostlist.remove(host)
 		if  len(server) != 0 :
 			if str(host['name']) in server and host not in hostlist:
@@ -135,7 +135,7 @@ def applyfilter(cust_acronym_list=[],server=[],server_acronym=''):
 					if  cust_grp_acronym.lower() in par3_host['name'].lower() and par3_host not in hostlist:
 						hostlist.append(par3_host)
 				else:
-					if '!' in cust_grp_acronym and cust_grp_acronym[1:] in par3_host['name'].lower() and par3_host in hostlist:
+					if '!' in cust_grp_acronym and cust_grp_acronym[1:].lower() in par3_host['name'].lower() and par3_host in hostlist:
                                                 hostlist.remove(par3_host)
 		if len(server) != 0:
 			if 'name' in par3_host and str(par3_host['name']) in server and par3_host not in hostlist:
@@ -152,7 +152,7 @@ def applyfilter(cust_acronym_list=[],server=[],server_acronym=''):
 					if  cust_grp_acronym.lower() in vmware['vmname'].lower() and vmware not in hostlist:
 						hostlist.append(vmware)
 				else:
-					if '!' in cust_grp_acronym and cust_grp_acronym[1:] in vmware['vmname'].lower() and vmware in hostlist:
+					if '!' in cust_grp_acronym and cust_grp_acronym[1:].lower() in vmware['vmname'].lower() and vmware in hostlist:
                                                 hostlist.remove(vmware)
 		if len(server) != 0 :
 			if vmware['vmname'] in server and vmware not in hostlist:

@@ -18,6 +18,7 @@ from collections import OrderedDict
 
 #------ vm/disk report common module -------#
 def get_result_usage(cust_acronym=[],server = [], server_acronym = ''):
+        print (cust_acronym)
         result = []
         usage = 0
         error = []
@@ -244,7 +245,7 @@ class Dashboard(View):
 		host_count = 0
 		try:
 			if custgrp > 0:
-				cust_acronym = JuiceGroupnames.objects.get(groupnameid = custgrp).acronym 
+				cust_acronym = JuiceGroupnames.objects.get(groupnameid = custgrp).acronym
 				cust_acronym = cust_acronym.split(',') # handling multiple group acronyms
 			#else:
 			#	custgrp_obj = JuiceGroupnames.objects.all()
@@ -399,15 +400,18 @@ class CustomerGroup(View):
 		active_user = get_user_grp(request.user)
 		grp_id = int(self.request.POST.get('groupid') or 0)
 		customer_grp = self.request.POST.get('customer_grp')or 'Anonymous'
-		selected_vms = self.request.POST.getlist('vmlist') or []
-		acronym = self.request.POST.get('acronym') or customer_grp[:4]
+		#selected_vms = self.request.POST.getlist('vmlist') or []
+		ajax = int(self.request.POST.get('ajax')) or 0
+		acronym = self.request.POST.get('acronym') or ''
 		try:
 			grp_obj = JuiceGroupnames.objects.filter(name=customer_grp) if grp_id == 0 else JuiceGroupnames.objects.filter(groupnameid = grp_id)
 			if len(grp_obj) == 0:
 				obj = JuiceGroupnames.objects.create(name=customer_grp,acronym = acronym)
 				grpid = obj.groupnameid
-				for vm_name in selected_vms:
-					JuiceGroupvm.objects.create(groupid = grpid,vm=vm_name)
+				#for vm_name in selected_vms:
+				#	JuiceGroupvm.objects.create(groupid = grpid,vm=vm_name)
+				if ajax == 1:
+					return HttpResponse('Succesfully created a group with selected Servers/VMs')
 				return redirect('/webapp/customer_grplist?success=1')
 			else:
 				existingid = 0
@@ -418,8 +422,10 @@ class CustomerGroup(View):
 				obj.acronym = acronym
 				obj.save()
 				obj2 = JuiceGroupvm.objects.filter(groupid = existingid).delete()
-				for vm_name in selected_vms:
-					JuiceGroupvm(groupid = existingid,vm=vm_name).save()
+				#for vm_name in selected_vms:
+				#	JuiceGroupvm(groupid = existingid,vm=vm_name).save()
+				if ajax == 1:
+					return HttpResponse('Succesfully updated the customer group with selected Server/VMs')
 				return redirect('/webapp/customer_grplist?update=1')
 		except Exception as e:
 			error_msg = "Exception handled in Customer group creation form post"
