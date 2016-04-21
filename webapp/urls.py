@@ -2,6 +2,7 @@ from django.conf.urls import patterns, url,include
 from webapp import views,user_auth
 urlpatterns = patterns('',
     url(r'^$',views.Summary.as_view()),
+    url(r'^ajax_request/$',views.AjaxRequest.as_view()),
     url(r'^unmapped_disk/$',views.UnmappedDisk.as_view()),
     url(r'^csvexport/$',views.CSVExport.as_view()),
     url(r'^login/',user_auth.Login.as_view()),

@@ -18,7 +18,6 @@ from collections import OrderedDict
 
 #------ vm/disk report common module -------#
 def get_result_usage(cust_acronym=[],server = [], server_acronym = ''):
-        print (cust_acronym)
         result = []
         usage = 0
         error = []
@@ -62,6 +61,11 @@ def get_result_usage(cust_acronym=[],server = [], server_acronym = ''):
             res_dict,usage,error = {},0,''
         return res_dict,host_count,usage,error
 
+class AjaxRequest(View):
+	def get(self,request):
+		groupid = self.request.GET.get('groupid') or 0
+		acronym= JuiceGroupnames.objects.get(groupnameid = groupid).acronym
+		return HttpResponse(acronym)
 # ------ Module for unmapped Disks and VM listing  --------#
 class UnmappedDisk(View):	
 	def get(self,request):
