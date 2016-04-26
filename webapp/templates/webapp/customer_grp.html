@@ -38,6 +38,28 @@
 					window.location.href = "/webapp/customer_grplist/";		
 			});
 		});
+		$('#acronym').blur(function(){
+		       //Reset the select boxes
+		       $('#filter_select3 option').prop('selected', true);
+	               moveItems('#filter_select3','#filter_select')
+		       $('#filter_select option:selected').prop("selected",false);
+	
+		       var acronym = $('#acronym').val();
+                       $.ajax({
+                       type: "GET",
+                       url: '/webapp/ajax_request/?acronym='+acronym,
+    		       dataType: 'json',
+                       success: function(response){
+				$.each(response.result, function(index, data){
+					$('#filter_select option[name="'+data+'"]').prop('selected',true);
+	
+        	                });
+				 moveItems('#filter_select','#filter_select3')
+
+                       }
+                    });
+               });
+
 		moveItems('#filter_select', '#filter_select3');
 
 		$('#left').click(function () {
@@ -61,7 +83,7 @@
 		//initially Reset the select Boxes
 		$('#filter_select3 option').prop('selected', true);
                 moveItems('#filter_select3','#filter_select')
-                $('#filter_select option').prop('selected', false);	
+                //$('#filter_select option').prop('selected', false);	
 
 		var x = $("#acronym").val(); 
 		if ($("#acronym").val().length == 0){
@@ -113,31 +135,32 @@
 <div>-----------------------------------------------------------------------------------------------------------------------</div>
 <form  id = "cust_grp" class="form" role="form" action="/webapp/customergroup/" method="post">
 {% csrf_token %}
-<div class="form-group">
-        <span>Customer Group Name :</span>
-        <input type='text' name='customer_grp'  placeholder="Group Name "value='{{group_name}}' style="margin-left:27px;" id= 'customer_grp' required/> 
+<div class="form-group col-md-12">
+        <div class='col-md-3'>Customer Group Name :</div>
+        <input type='text' name='customer_grp'  placeholder="Group Name "value='{{group_name}}' id= 'customer_grp' required/> 
 </div>
 
-<div class="form-group">
-        <span>Group Acronym :</span>
-        <input type='text' name='acronym'  placeholder="Group Acronym" value='{{group_acronym}}' style="margin-left:27px;" id= 'acronym' onblur=select_vm() />
+<div class="form-group col-md-12">
+        <div class='col-md-3'>Group Acronym :</div>
+        <input type='text' name='acronym'  placeholder="Group Acronym" value='{{group_acronym}}' id= 'acronym' />
 	<span class="text-danger">*Free text filter. <i>Eg:terex,trx</i></span>
 	<input type="hidden" id="ajax" name="ajax" value="" />
-	<button type="button" id="ajaxsubmit" class="btn btn-primary" style="margin-left:65%;">Apply</button>
+	<button type="button" id="ajaxsubmit" class="btn btn-primary" style="margin-left:67%;">Apply</button>
 </div>
 
-<div class="form-group" id ='vm'>
-        <span>Select VM/Servers to group : </span>
-	<select multiple id ="filter_select" style="vertical-align:middle;height:500px;">
+<div class="form-group col-md-12" id ='vm'>
+        <div class='col-md-3'>Select VM/Servers to group : </div>
+	<select multiple id ="filter_select" class='col-md-4' style="height:500px; padding:0;">
 	{{selected_vmlist}}
         {%for vm in vmlist%}
                  <option value="{{vm}}" name="{{vm}}" {%if vm in selected_vmlist%} selected="selected" {%endif%}>{{vm}}</option>
         {%endfor%}
 	</select>
-
+	<div class='col-md-1'>
 	<input type="button" id="left" value="<" />
         <input type="button" id="right" value=">" />
-	<select multiple='multiple' id ="filter_select3" style="vertical-align:middle;height:500px;" name="vmlist">
+	</div>
+	<select multiple='multiple' id ="filter_select3" class='col-md-4' style="height:500px; padding:0;" name="vmlist">
         </select>
 
 

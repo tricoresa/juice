@@ -64,8 +64,39 @@ def get_result_usage(cust_acronym=[],server = [], server_acronym = ''):
 class AjaxRequest(View):
 	def get(self,request):
 		groupid = self.request.GET.get('groupid') or 0
-		acronym= JuiceGroupnames.objects.get(groupnameid = groupid).acronym
-		return HttpResponse(acronym)
+		acronymlist = self.request.GET.get('acronym').split(',')or []
+		if groupid >0:
+			acronym= JuiceGroupnames.objects.get(groupnameid = groupid).acronym
+			return HttpResponse(acronym)
+
+
+		elif acronymlist!= [''] :
+
+			ovm_serverlist = get_ovm_serverlist()
+			infini_serverlist = get_infini_serverlist()
+			par3_serverlist = get_3par_serverlist()
+			vmware_serverlist = get_vmware_serverlist()
+			serverlist =set( ovm_serverlist+infini_serverlist+par3_serverlist+vmware_serverlist)
+			name_convention = ['psmw','psml','psmu','psmv','pchw','pchl','pchu','pchv', 'nsmw','nsml','nsmu','nsmv','nchw','nchl','nchu','nchv','rsmw','rsml','rsmu','rsmv','rchw','rchl','rchu','rchv','tsmw','tsml','tsmu','tsmv','tchw','tchl','tchu','tchv']
+
+			reslist = []
+			for s in serverlist:
+				if s[:4] in name_convention:
+					server = s[4:]
+				else:
+					server = s
+				for acronym in acronymlist:
+					if '!' not in acronym :
+						if acronym.strip().lower() in server.lower():
+							reslist.append(s)
+					else:
+						if acronym[1:].strip().lower() in server.lower() and s in reslist:
+							reslist.remove(s)
+			return HttpResponse(json.dumps({'result':reslist}))
+			# on form submit, select all the values of select box 3
+			# make sure if left right item swapping buttons are working fine.
+		else:
+			return HttpResponse(json.dumps({'result':[]}))	
 # ------ Module for unmapped Disks and VM listing  --------#
 class UnmappedDisk(View):	
 	def get(self,request):
