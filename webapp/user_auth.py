@@ -94,6 +94,8 @@ class Login(View):
                 user  =auth.authenticate(username=username,password=password)
                 if user is not None:
                         auth.login(request,user) 
+                        request.session['user'] = user.id
+                        request.session.set_expiry(86400)
                         return redirect(next)
                 else:
                         return render(request,'webapp/login.html',{'next':next,'error':'Your login credentials are invalid. Try Again!'})
