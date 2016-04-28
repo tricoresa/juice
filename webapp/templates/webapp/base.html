@@ -65,7 +65,7 @@
 	                <ul class="dropdown-menu">
         	                <li><a href="/webapp/customergroup">Add Customer Group</a></li>
 				<li><a href="/webapp/customer_grplist">Edit Customer Group</a></li>
-				<li><a href="/webapp/register">Add User</a></li>	
+				{%if active_user = 1%}<li><a href="/webapp/register">Add User</a></li>	{%endif%}
 				<li><a href="/webapp/userlist">User List</a></li>
 	                </ul>
 	        	</li>
