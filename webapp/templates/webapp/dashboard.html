@@ -64,7 +64,7 @@ $(function ()
  <div class="row">
       <div>
         <ol class="breadcrumb">
-          <li class="active">VM aand Disk Report</li>
+          <li class="active">VM and Disk Report</li>
             <li><a href="{{back_url}}" title="back to previous page">Back</a></li>
                {%if error_msg%} <li class="text-danger">{{error_msg}}</li>{%endif%}
 		<li class="text-primary" id ='notify'></li>
@@ -86,7 +86,7 @@ $(function ()
     </div>
     {%if error_notify == ''%}
         <div class="row">
-	  <div class="col-sm-4" style="border:1px; width:inherit; background-color: #99CCFF;">Server/VM count  = {{host_count}}</div>
+	  <div class="col-sm-4" style="border:1px; width:inherit; background-color: #99CCFF;">Server count  = {{host_count}}</div>
 	  <div class="col-sm-4" style="border:1px; width:inherit; background-color: #FFFF66;">Total Usage =  {{total_usage}}  </div>
         </div>
 	{% for key, res in resdict.items %}

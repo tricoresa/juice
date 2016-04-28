@@ -56,8 +56,10 @@ session.verify= False #disables SSL certificate verification
 session.auth=('juice','tcs_juice')
 
 session.headers.update({'Accept': 'application/json', 'Content-Type': 'application/json'})
+baseUri1='https://10.62.100.88:7002/ovm/core/wsapi/rest'
+baseUri2='https://10.66.100.67:7002/ovm/core/wsapi/rest'
 
-baseUri='https://smdcovmm01.tricorems.com:7002/ovm/core/wsapi/rest'
+#baseUri='https://smdcovmm01.tricorems.com:7002/ovm/core/wsapi/rest'
 exclude_list = []
 def  login_required(user):
 	if  not user.is_authenticated()  or  user.is_anonymous():
@@ -207,15 +209,23 @@ def get_servernames(cust_acronym_list = []):
 	return hostlist
 # --- Details of OVM repositories ----#
 def get_repo_detail(repoid):
-	repoFileIds = session.get(baseUri+'/Repository/'+str(repoid)+'/FileSystem')
+	repoFileIds = []
+	repoFileIds1 = session.get(baseUri1+'/Repository/'+str(repoid)+'/FileSystem')
+	repoFileIds2 = session.get(baseUri2+'/Repository/'+str(repoid)+'/FileSystem')
+	repoFileIds.append( repoFileIds1.json())
+	repoFileIds.append(repoFileIds2.json() )
 	res_dict = {}
-	res_dict['reponame'] = repoFileIds.json()['repositoryIds'][0]['name']
-	size = repoFileIds.json()['size']
-	res_dict['size'] = bytesto(size,'g')
-	freesize = repoFileIds.json()['freeSize']
-	res_dict['freesize'] = bytesto(freesize,'g')
-	usedsize  = size-freesize
-	res_dict['usedsize'] = bytesto(usedsize,'g')
+	for repo in repoFileIds:
+		try:
+			res_dict['reponame'] = repo['repositoryIds'][0]['name']
+			size = repo['size']
+			res_dict['size'] = bytesto(size,'g')
+			freesize = repo['freeSize']
+			res_dict['freesize'] = bytesto(freesize,'g')
+			usedsize  = size-freesize
+			res_dict['usedsize'] = bytesto(usedsize,'g')
+		except: 	
+			pass
 	return res_dict
 
 # ---------List of all the unique VMs in OVM -------------- #
