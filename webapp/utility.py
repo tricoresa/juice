@@ -17,33 +17,6 @@ USER_GRP = {
 'ReadOnly':''
 }
 
-#Read JSON files
-
-with open('webapp/JSON/vm.json') as data_file:
-        vmdata = json.load(data_file)
-with open('webapp/JSON/server.json') as data_file:
-        serverdata = json.load(data_file)
-with open('webapp/JSON/repo.json') as data_file:
-        repodata = json.load(data_file)
-with open('webapp/JSON/storagelem.json') as data_file:
-        storagelemdata = json.load(data_file)
-with open('webapp/JSON/virtualdisk.json') as data_file:
-        virtualdiskdata = json.load(data_file)
-with open('webapp/JSON/infini_host.json') as data_file:
-        infini_host_data = json.load(data_file)
-with open('webapp/JSON/infini_vol.json') as data_file:
-        infini_volume_data = json.load(data_file)
-with open('webapp/JSON/vmdiskmapping.json') as data_file:
-	vmdiskmapping_data = json.load(data_file)
-with open('webapp/JSON/3par_host.json') as data_file:
-        par3Host_data = json.load(data_file)
-with open('webapp/JSON/3par_vol.json') as data_file:
-        par3Volume_data = json.load(data_file)
-with open('webapp/JSON/3par_vlun.json') as data_file:
-        par3Vlun_data = json.load(data_file)
-with open('webapp/JSON/vmware.json') as data_file:
-        vmware_data = json.load(data_file)
-
 def bytesto(bytes, to, bsize=1024):
         unit = {'k' : 1, 'm': 2, 'g' : 3, 't' : 4, 'p' : 5, 'e' : 6 }
         result = float(bytes)
@@ -94,6 +67,15 @@ def pagination(obj,limit,page=1):
 #------Module to apply the user defined filter of customer group or server/host name to get the specific Host(s) details -------#
 def applyfilter(cust_acronym_list=[],server=[],server_acronym=''):
 	hostlist = []
+	with open('webapp/JSON/vm.json') as data_file:
+		print ('utility applyfilter')
+		vmdata = json.load(data_file)
+	with open('webapp/JSON/infini_host.json') as data_file:
+		infini_host_data = json.load(data_file)
+	with open('webapp/JSON/3par_host.json') as data_file:
+		par3Host_data = json.load(data_file)
+	with open('webapp/JSON/vmware.json') as data_file:
+		vmware_data = json.load(data_file)
 	for vm in vmdata:
 		for cust_grp_acronym in cust_acronym_list:
 			cust_grp_acronym = cust_grp_acronym.strip()
@@ -166,6 +148,16 @@ def applyfilter(cust_acronym_list=[],server=[],server_acronym=''):
 #--------Module to get server/host names from all hosts across OVM/infini/3par/VMWare ------#
 def get_servernames(cust_acronym_list = []):
 	hostlist = []
+	with open('webapp/JSON/vm.json') as data_file:
+		print ('utility get_servernames')
+		vmdata = json.load(data_file)
+	with open('webapp/JSON/infini_host.json') as data_file:
+		infini_host_data = json.load(data_file)
+	with open('webapp/JSON/3par_host.json') as data_file:
+		par3Host_data = json.load(data_file)
+	with open('webapp/JSON/vmware.json') as data_file:
+		vmware_data = json.load(data_file)
+
 	for vm in vmdata:
 		for cust_grp_acronym in cust_acronym_list:
 			cust_grp_acronym = cust_grp_acronym.strip()
@@ -231,6 +223,9 @@ def get_repo_detail(repoid):
 # ---------List of all the unique VMs in OVM -------------- #
 def get_ovm_serverlist():
 	ovm_serverlist = []
+	with open('webapp/JSON/vm.json') as data_file:
+		print ('utility get ovm serverlist')
+		vmdata = json.load(data_file)
 	for vm in vmdata:
 		if 'name' in vm and vm['name']!= '':
 			ovm_serverlist.append(vm['name'])
@@ -241,6 +236,11 @@ def get_unmapped_ovm():
 	resdict = {}
 	error = ''
 	try:
+		with open('webapp/JSON/storagelem.json') as data_file:
+			print ('utility get unmapped ovm')
+			storagelemdata = json.load(data_file)
+		with open('webapp/JSON/virtualdisk.json') as data_file:
+			virtualdiskdata = json.load(data_file)
 		for virtual in virtualdiskdata:
 			if virtual['vmDiskMappingIds'] == []:
 				if virtual['uri'] not in resdict:
@@ -281,6 +281,13 @@ def get_ovm(vlist):
 	error = ''
 	res_dict  = {}
 	try:
+		with open('webapp/JSON/storagelem.json') as data_file:
+			print ('get_OVM')
+			storagelemdata = json.load(data_file)
+		with open('webapp/JSON/virtualdisk.json') as data_file:
+			virtualdiskdata = json.load(data_file)
+		with open('webapp/JSON/vmdiskmapping.json') as data_file:
+			vmdiskmapping_data = json.load(data_file)
 		if len(vlist) == 0:
 			vlist = [vm  for  vm in vmdata]
 		for v in vlist:

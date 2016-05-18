@@ -325,6 +325,8 @@ class Repository(View):
 		error_msg = ''
 		selected_repoid = self.request.GET.get('repo') or ''
 		try:
+			with open('webapp/JSON/repo.json') as data_file:
+				repodata = json.load(data_file)
 			for repo in repodata:
 				repolist.append(repo['id'])
 			if selected_repoid != '':

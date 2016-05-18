@@ -1,11 +1,15 @@
 # ----- Infinibox related modules ----#
-import requests
-from webapp.utility import infini_host_data,bytesto,infini_volume_data
+import requests,json
+from webapp.utility import bytesto
 
 # ------Infinibox Server List ---- #
 def get_infini_serverlist():
 	serverlist = []
 	hostnamelist = []
+	with open('webapp/JSON/infini_host.json') as data_file:
+		print ('infinibox serverlist')
+		infini_host_data = json.load(data_file)
+
 	for host  in infini_host_data: #['result']:
 		#server_dict = {}
 		name= host['name']
@@ -20,6 +24,9 @@ def get_infini_serverlist():
 
 # ------ Listing the unmapped volumes in infinibox ---- #
 def get_unmapped_infini():
+	with open('webapp/JSON/infini_vol.json') as data_file:
+		print ('unmapped_infini')
+		infini_volume_data = json.load(data_file)
 	volume_list_json = infini_volume_data
 	error = ''
 	resdict = {}
@@ -44,6 +51,9 @@ def get_unmapped_infini():
 
 #---- Given the HOST and Volume list object, it calculates the disk names, disk ids and size of disk for each host  ----# 
 def get_infini(hostlist,limit=1000):
+        with open('webapp/JSON/infini_vol.json') as data_file:
+                print ('get_infini')
+                infini_volume_data = json.load(data_file)
         volume_list_json = infini_volume_data
         infini_total_usage = 0
         error = ''

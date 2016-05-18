@@ -32,7 +32,7 @@ def create_json():
 	# Saving the json data to respective files for OVM
 	Vm1 = session.get(baseUri1+'/Vm')
 	Vm2 = session.get(baseUri2+'/Vm')
-	Vm = Vm1.json()+Vm2.json()
+	Vm =  Vm1.json()+Vm2.json()
 	with open('webapp/JSON/vm.json', 'w') as outfile:
 		json.dump(Vm, outfile)
 
@@ -66,6 +66,7 @@ def create_json():
 	with open('webapp/JSON/vmdiskmapping.json', 'w') as outfile:
 		json.dump(VmDiskMapping, outfile)
 	
+	session.close()
 	
 	# Saving the JSON data for INFINIBOX
 	host_list=inf_session.get(host_baseUri+"?page_size="+str(PAGE_SIZE))
@@ -95,7 +96,7 @@ def create_json():
 	with open('webapp/JSON/infini_host.json', 'w') as outfile:
 		json.dump(host_data, outfile)
 
-	
+	inf_session.close()	
 	"""volume_list = inf_session.get(vol_baseUri+"?page_size="+str(PAGE_SIZE))
 	volume_list_json = volume_list.json()
 	
@@ -201,11 +202,16 @@ def create_json():
 		for each_vm_hardware in hardware.device:
 			if (each_vm_hardware.key >= 2000) and (each_vm_hardware.key < 3000):
 				tmp_dict = {}
-				reponame = each_vm_hardware.backing.fileName.split(']')[0]
-				tmp_dict['reponame'] = reponame[1:]
-				disk = each_vm_hardware.backing.fileName.split('/')[1]
-				tmp_dict['disk'] = disk
-				tmp_dict['capacity'] = each_vm_hardware.capacityInKB/1024/1024
+				try:
+					reponame = (each_vm_hardware.backing.fileName).split(']')[0]
+					tmp_dict['reponame'] = reponame[1:]
+					disk = (each_vm_hardware.backing.fileName).split('/')[1]
+					tmp_dict['disk'] = disk
+					tmp_dict['capacity'] = each_vm_hardware.capacityInKB/1024/1024	
+				except:
+					tmp_dict['reponame'] = ''
+					tmp_dict['disk'] = ''
+					tmp_dict['capacity'] = 0
 				repo_dict['vmware_disklist'].append(tmp_dict)
 		result.append(repo_dict)
 	si = SmartConnect(host='10.66.100.15',

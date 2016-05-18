@@ -1,9 +1,11 @@
 # ----- VMware related modules ----#
-import requests,math
-from webapp.utility import vmware_data,bytesto
-
+import requests,math,json
+from webapp.utility import bytesto
 # ------VMware unique VM  List ---- #
 def get_vmware_serverlist():
+	with open('webapp/JSON/vmware.json') as data_file:
+		print ('vmware_serverlist')
+		vmware_data = json.load(data_file)
 	vmnamelist = []
 	for host  in vmware_data:
 		vmnamelist.append(host['vmname'])
@@ -14,6 +16,9 @@ def get_unmapped_vmware():
 	resdict = {}
 	error = ''
 	try:
+		with open('webapp/JSON/vmware.json') as data_file:
+			print ('unmapped_vmware')
+			vmware_data = json.load(data_file)
 		for vmware in vmware_data:
 			if vmware['vmhost'] == '' or vmware['vmhost'] == None:
 				if vmware['ip'] not  in resdict:
@@ -41,6 +46,9 @@ def get_vmware(vmlist):
 	vmware_total_usage = 0
 	temp_dict = {}
 	try:
+		with open('webapp/JSON/vmware.json') as data_file:
+			print ('get_vmware')
+			vmware_data = json.load(data_file)
 		if len(vmlist) == 0:
 			vmlist = vmware_data # [vmware for vmware in vmware_data]
 		for vm in vmlist:

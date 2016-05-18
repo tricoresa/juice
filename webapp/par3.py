@@ -1,8 +1,12 @@
 import pprint,json
-from webapp.utility import bytesto,par3Host_data,par3Volume_data,par3Vlun_data
-
+from webapp.utility import bytesto
 # -----Get list of unmapped 3 Par volumes ----#
 def get_unmapped_3par():
+	with open('webapp/JSON/3par_vol.json') as data_file:
+		print ('par3_unmapped')
+		par3Volume_data = json.load(data_file)
+	with open('webapp/JSON/3par_vlun.json') as data_file:
+		par3Vlun_data = json.load(data_file)
 	error = ''
 	resdict = {}
 	try:
@@ -38,6 +42,14 @@ def get_3par(hostlist):
 	serverlist = []
 	vol_list = []
 	res_dict = {}
+	with open('webapp/JSON/3par_host.json') as data_file:
+		print ('get_par3')
+		par3Host_data = json.load(data_file)
+	with open('webapp/JSON/3par_vol.json') as data_file:
+		par3Volume_data = json.load(data_file)
+	with open('webapp/JSON/3par_vlun.json') as data_file:
+		par3Vlun_data = json.load(data_file)
+
 	if len(hostlist)== 0:
 		hostlist = par3Host_data#['members'] 
 	try:
@@ -79,6 +91,10 @@ def get_3par(hostlist):
 def get_3par_serverlist():
 	hostnamelist = []	 
 	serverlist = []
+	with open('webapp/JSON/3par_host.json') as data_file:
+		print ('par3 serverlist')
+		par3Host_data = json.load(data_file)
+
 	for server in par3Host_data: #['members']:
 		if 'name' in server and 'id' in server:
 			if server['name'] not in hostnamelist:
