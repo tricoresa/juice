@@ -16,22 +16,23 @@
  </div> <!-- div class="row" -->
  <div class="row">
   <div class="col-sm-9">
+{{error_msg}}
     {%if error_msg == ''%}
 	<div class="row">
 		<div class="col-sm-4" style="border:1px; width:inherit; background-color: #FFFF66;">Total Usage =  {{total_size}}  </div>
 	</div>
-	{%for key,value in res_dict.items %}
-        	<ul>
-			<li> <h5><b> {{key}}</b></h5> Total Disk size =  {{value.total_size}}</li>
-		</ul>
-	       <table class='table table-bordered table-hover table-striped' style="table-layout: fixed; word-wrap: break-word;">
-        	 <tr class="text-center">
-    		   <th>Source</th>
-		   <th>Repo Name</th>
-	           <th>Disk Name</th>
-        	   <th>Disk Id</th>
-	           <th>Disk Size</th>
-        	 </tr>
+     {%for key,value in res_dict.items %}
+     <ul>
+	<li> <h5><b> {{key}}</b></h5> Total Disk size =  {{value.total_size}}</li>
+     </ul>
+     <table class='table table-bordered table-hover table-striped' style="table-layout: fixed; word-wrap: break-word;">
+    	 <tr class="text-center">
+   	   <th>Source</th>
+	   <th>Repo Name</th>
+           <th>Disk Name</th>
+       	   <th>Disk Id</th>
+           <th>Disk Size</th>
+       	 </tr>
          {%for elem  in value.disk_list %}
 	  <tr>
 	     <td>{{value.source}}</td>
@@ -41,11 +42,11 @@
              <td>{{elem.size}}</td>
            </tr>
         {%endfor%}
-       </table>
-	{%endfor%}
-      {%endif%}
-
-   <p style="background-color: #F3D2D8;">{{error_notify}}</p>
+    </table>
+    {%empty%}
+      <p  class="row col-sm-4" style="background-color: #F3D2D8;">No unmapped VM or Disks available.</p>
+    {%endfor%}
+    {%endif%}
    </div>
 </div>
 </div>
