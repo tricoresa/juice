@@ -61,6 +61,7 @@ def get_result_usage(cust_acronym=[],server = [], server_acronym = ''):
             res_dict,usage,error = {},0,''
         return res_dict,host_count,usage,error
 
+#----------------- Module supporting Customer group create / Edit , 'Apply' button functionaly-------------#
 class AjaxRequest(View):
 	def get(self,request):
 		groupid = self.request.GET.get('groupid') or 0

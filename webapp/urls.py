@@ -1,5 +1,5 @@
 from django.conf.urls import patterns, url,include
-from webapp import views,user_auth
+from webapp import views,user_auth,rest
 urlpatterns = patterns('',
     url(r'^$',views.Summary.as_view()),
     url(r'^ajax_request/$',views.AjaxRequest.as_view()),
@@ -16,4 +16,5 @@ urlpatterns = patterns('',
     url(r'^repositoryreport/$',views.Repository.as_view()),
     url(r'^customergroup/',views.CustomerGroup.as_view()),
     url(r'^customer_grplist/',views.CustomerGroupList.as_view()),
+    url(r'^rest_disk/',rest.diskDetails.as_view()),
 )
