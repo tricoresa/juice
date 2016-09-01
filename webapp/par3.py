@@ -28,6 +28,7 @@ def get_unmapped_3par():
 				vol_dict['name'] = vol['name']
 				size = bytesto(vol['sizeMiB'],'k')
 				vol_dict['size'] =  str(size)
+				vol_dict['used_size']= bytesto(vol['userSpace']['usedMiB'],'k')
 				vol_dict['WWN'] = vol['wwn']
 				resdict[vol['ip']]['total_size'] += size
 				resdict[vol['ip']]['disk_list'].append(vol_dict)
@@ -77,6 +78,7 @@ def get_3par(hostlist):
 							vol_dict['source'] = '3Par'
 							size = bytesto(vol['sizeMiB'],'k')
 							vol_dict['size'] =  size
+							vol_dict['used_size']= bytesto(vol['userSpace']['usedMiB'],'k')
 							vol_dict['WWN'] = vol['wwn']
 							res_dict[server['name']]['total_size'] += size #bytesto(vol['sizeMiB'],'g')
 							total_usage += size

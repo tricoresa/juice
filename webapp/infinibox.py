@@ -83,6 +83,7 @@ def get_infini(hostlist,limit=1000):
                                            res_dict[host['name']]['total_size']+= size
                                            #infini_total_usage += size
                                            vol_dict['size'] = size
+                                           vol_dict['used_size'] = bytesto(volume['used'],'g')
                                            res_dict[host['name']]['disk_list'].append(vol_dict)
                         infini_total_usage += res_dict[host['name']]['total_size']
                         if host['name'] in res_dict and len(res_dict[host['name']]['disk_list']) == 0:

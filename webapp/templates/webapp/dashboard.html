@@ -100,6 +100,7 @@ $(function ()
            <th>Disk Id</th>
            <th>Disk Name</td>
            <th>Disk Size</th>
+	   <th>Disk Used</th>
          </tr>
          {%for elem  in res.disk_list %}
 	  <tr  {%for discard_str in exclude_list%}{%if discard_str in elem.name|lower%} class="warning" {%endif%}{%endfor%}
@@ -109,6 +110,7 @@ $(function ()
              <td>{{elem.id}}</td>
              <td>{{elem.name}}</td>
              <td>{{elem.size}}</td>
+	     <td>{{elem.used_size}}</td>
            </tr>
         {%endfor%}
        </table>
