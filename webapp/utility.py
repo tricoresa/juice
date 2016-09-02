@@ -233,7 +233,7 @@ def get_ovm_serverlist():
 
 # ------------- List of unmapped VM in OVM ----------- #
 def get_unmapped_ovm():
-	resdict = {}
+	reslist = []
 	error = ''
 	try:
 		with open('webapp/JSON/storagelem.json') as data_file:
@@ -241,6 +241,7 @@ def get_unmapped_ovm():
 			storagelemdata = json.load(data_file)
 		with open('webapp/JSON/virtualdisk.json') as data_file:
 			virtualdiskdata = json.load(data_file)
+		resdict = {}
 		for virtual in virtualdiskdata:
 			if virtual['vmDiskMappingIds'] == []:
 				if virtual['uri'] not in resdict:
@@ -269,17 +270,18 @@ def get_unmapped_ovm():
 				res_dict['size']= size
 				resdict[storage['uri']]['total_size'] += size
 				resdict[storage['uri']]['disk_list'].append(res_dict)
+		reslist.append(resdict)
 	except  Exception as e:
 		error = "Error in OVM calculation - "+str(e)
 
-	return (resdict,error)
+	return (reslist,error)
 
 # -------------Get VM from OVM and its respective Virtual and physical disks/repo details on the basis of selected VMs ------ #
 def get_ovm(vlist):
 	total_usage= 0
 	disk_list = []
 	error = ''
-	res_dict  = {}
+	reslist  = []
 	try:
 		with open('webapp/JSON/storagelem.json') as data_file:
 			print ('get_OVM')
@@ -291,20 +293,21 @@ def get_ovm(vlist):
 		if len(vlist) == 0:
 			vlist = [vm  for  vm in vmdata]
 		for v in vlist:
+			res_dict = {}
 			serverId = v.get('serverId')
 			if not serverId:
 				continue;
-			servername = serverId.get('name') if serverId else 'None'
+			servername = serverId.get('name') if serverId and 'name' in serverId else 'None'
 			vmname = v['id']['name']
-			if vmname not in  res_dict:
-				res_dict[vmname] = {}
-				res_dict[vmname]['source'] = 'OVM'
-				res_dict[vmname]['vm_name'] = vmname
-				res_dict[vmname] ['physicalist']  = []
-				res_dict[vmname]['virtualist'] = []
-				res_dict[vmname]['disk_list'] = []
-				res_dict[vmname]['total_size'] = 0
-				res_dict[vmname]['servername'] = servername
+			#if vmname not in  res_dict:
+			res_dict[vmname] = {}
+			res_dict[vmname]['source'] = 'OVM'
+			res_dict[vmname]['vm_name'] = vmname
+			res_dict[vmname] ['physicalist']  = []
+			res_dict[vmname]['virtualist'] = []
+			res_dict[vmname]['disk_list'] = []
+			res_dict[vmname]['total_size'] = 0
+			res_dict[vmname]['servername'] = servername
 			id = v['id']['value']
 			for disk in vmdiskmapping_data:
 				if disk['vmId']['value'] == id and disk['storageElementId']!= None:
@@ -360,10 +363,12 @@ def get_ovm(vlist):
 							virtual_dict['total'] += int(virtual_disk_size)
 						res_dict[vmname]['virtualist'].append(virtual_dict)
 			res_dict[vmname]['disk_list']  = res_dict[vmname]['virtualist']+res_dict[vmname]['physicalist']
+			reslist.append(res_dict)
 			#if vmname in res_dict and len(res_dict[vmname]['disk_list']) == 0:
 			#	res_dict.pop(vmname,None)
 	except Exception as e:
+		print (e)
 		error  = "Error in OVM calculation - "+str( e)
-	return (res_dict,total_usage,error)
+	return (reslist,total_usage,error)
 
 

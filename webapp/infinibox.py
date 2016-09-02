@@ -29,15 +29,16 @@ def get_unmapped_infini():
 		infini_volume_data = json.load(data_file)
 	volume_list_json = infini_volume_data
 	error = ''
-	resdict = {}
+	reslist = []
 	try:
 			for volume in volume_list_json:	
-				if volume['mapped'] == False:
-					if 'ip' in volume and volume['ip'] not in resdict:
-						resdict[volume['ip']] = {}
-						resdict[volume['ip']]['source'] = 'Infinibox'
-						resdict[volume['ip']]['total_size'] = 0
-						resdict[volume['ip']]['disk_list'] = []
+				if volume['mapped'] == False and 'ip' in volume:
+					#if 'ip' in volume and volume['ip'] not in resdict:
+					resdict = {}
+					resdict[volume['ip']] = {}
+					resdict[volume['ip']]['source'] = 'Infinibox'
+					resdict[volume['ip']]['total_size'] = 0
+					resdict[volume['ip']]['disk_list'] = []
 					vol_dict = {}
 					vol_dict['name'] = volume['name']
 					vol_dict['id'] = volume['id']
@@ -45,9 +46,10 @@ def get_unmapped_infini():
 					vol_dict['size'] = size
 					resdict[volume['ip']]['total_size'] += size
 					resdict[volume['ip']]['disk_list'].append(vol_dict)		
+					reslist.append(resdict)
 	except  Exception as e:
 		error = "Error in Infinibox calculation - "+str(e)
-	return (resdict,error)
+	return (reslist,error)
 
 #---- Given the HOST and Volume list object, it calculates the disk names, disk ids and size of disk for each host  ----# 
 def get_infini(hostlist,limit=1000):
@@ -57,18 +59,20 @@ def get_infini(hostlist,limit=1000):
         volume_list_json = infini_volume_data
         infini_total_usage = 0
         error = ''
-        res_dict = {}
-        vol_list = []
+        reslist = []
         try:
                 if  len(hostlist) == 0:
                         hostlist = infini_host_data #['result']
                 for host in hostlist:
-                    if 'luns' in host:
-                        if 'name' in host and host['name'] not in res_dict:
-                            res_dict[ host['name']] = {}
-                            res_dict[ host['name']]['source'] = 'Infinibox'
-                            res_dict[host['name']]['total_size'] = 0
-                            res_dict[host['name']]['disk_list'] = []
+                    if 'luns' in host and 'name' in host:
+                        print ('in infini hpsts')
+                        #if 'name' in host and host['name'] not in res_dict:
+                        res_dict = {}
+                        res_dict[ host['name']] = {}
+                        res_dict[ host['name']]['source'] = 'Infinibox'
+                        res_dict[host['name']]['total_size'] = 0
+                        res_dict[host['name']]['disk_list'] = []
+                        vol_list = []
                         luns=host['luns']
                         for lun in luns:
                             for volume in volume_list_json: #['result']:
@@ -88,7 +92,9 @@ def get_infini(hostlist,limit=1000):
                         infini_total_usage += res_dict[host['name']]['total_size']
                         if host['name'] in res_dict and len(res_dict[host['name']]['disk_list']) == 0:
                             res_dict.pop(host['name'],None)
+                        reslist.append(res_dict)
         except Exception as e:
+                print (e)
                 error = "Error in Infinibox calculation - "+str(e)
-        return (res_dict,infini_total_usage,error)
+        return (reslist,infini_total_usage,error)
 

@@ -23,15 +23,18 @@ def get_result_usage(cust_acronym=[],server = [], server_acronym = ''):
         error = []
         hostlist  = applyfilter(cust_acronym,server,server_acronym)
         host_count = 0
+        print ('length of host list = ', len(hostlist))
         if len(hostlist)>0:
-            infini_result,infini_usage,infini_error = get_infini(hostlist)
-            ovm_result,ovm_usage,ovm_error = get_ovm(hostlist)
-            vmware_result,vmware_usage,vmware_error = get_vmware(hostlist)
-            par3_result,par3_usage,par3_error = get_3par(hostlist)
-            result.append(ovm_result)
-            result.append(infini_result)
-            result.append(par3_result)
-            result.append(vmware_result)
+            result1,infini_usage,infini_error = get_infini(hostlist)
+            result2,ovm_usage,ovm_error = get_ovm(hostlist)
+            result3,vmware_usage,vmware_error = get_vmware(hostlist)
+            result4,par3_usage,par3_error = get_3par(hostlist)
+            result = result1+result2+result3+result4
+            #result.append(ovm_result)
+            #result.append(infini_result)
+            #result.append(par3_result)
+            #result.append(vmware_result)
+            print ('result length = ',len(result))
             res_dict = {}
             for res in result:
                 for key,value in res.items():
@@ -47,16 +50,16 @@ def get_result_usage(cust_acronym=[],server = [], server_acronym = ''):
                     else:
                         res_dict[key]['server'] = key
                     res_dict[key]['vm_name'] = res[key]['vm_name'] if 'vm_name' in res[key] else ''
-            usage = ovm_usage+infini_usage+par3_usage+vmware_usage
+            #usage = ovm_usage+infini_usage+par3_usage+vmware_usage
             host_count = len(res_dict)
-            if len(ovm_error) > 0:
+            """if len(ovm_error) > 0:
                  error.append(ovm_error) 
             if len(infini_error) > 0:
                 error.append(infini_error)
             if len(par3_error)>0:
                 error.append(par3_error)
             if len(vmware_error)>0:
-                error.append(vmware_error)
+                error.append(vmware_error)"""
         else:
             res_dict,usage,error = {},0,''
         return res_dict,host_count,usage,error
@@ -106,14 +109,15 @@ class UnmappedDisk(View):
 		error_msg = ''
 		result = []
 		active_user = get_user_grp(request.user)
-		ovm_result,error = get_unmapped_ovm()
-		infini_result,error = get_unmapped_infini()
-		par3_result,error = get_unmapped_3par()
-		vmware_result,error= get_unmapped_vmware()
-		result.append(ovm_result)
-		result.append(infini_result)
-		result.append(par3_result)
-		result.append(vmware_result)
+		result1,error = get_unmapped_ovm()
+		result2,error = get_unmapped_infini()
+		result3,error = get_unmapped_3par()
+		result4,error= get_unmapped_vmware()
+		result = result1+result2+result3+result4
+		#result.append(ovm_result)
+		#result.append(infini_result)
+		#result.append(par3_result)
+		#result.append(vmware_result)
 		res_dict = {}
 		totalsize = 0
 		for res in result:
@@ -161,13 +165,14 @@ class Summary(View):
 				if len(vlist) >  0:
 					# ------- Processing OVM result
 					ovm_res,ovm_usage,error = get_ovm(vlist)
-					for key, elem in ovm_res.items():
-						if len(elem.get('virtualist')) > 0 :
-							for vm_json in elem['virtualist']:
-								res_dict['virtual_disk_size'] += vm_json['total']
-						if len(elem.get('physicalist')) > 0:
-							for vm_json in elem['physicalist']:
-								res_dict['physical_disk_size'] += vm_json['total']
+					for dct in ovm_res:
+						for key, elem in dct.items():
+							if len(elem.get('virtualist')) > 0 :
+								for vm_json in elem['virtualist']:
+									res_dict['virtual_disk_size'] += vm_json['total']
+							if len(elem.get('physicalist')) > 0:
+								for vm_json in elem['physicalist']:
+									res_dict['physical_disk_size'] += vm_json['total']
 					# ------------- Processing Infini result
 					infini_res,infini_usage,error = get_infini(vlist)
 					res_dict['physical_disk_size'] += infini_usage
