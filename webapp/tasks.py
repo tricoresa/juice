@@ -198,7 +198,25 @@ def create_json():
 		repo_dict['vmhost'] = vm.runtime.host.name
 		repo_dict['vmname'] = vm.config.name
 		repo_dict['vmware_disklist'] = []
-		hardware = vm.config.hardware
+		for device in vm.config.hardware.device:
+			if (device.key >= 2000) and (device.key < 3000):
+				tmp_dict = {}
+				if hasattr(device.backing, 'fileName'):
+					datastore = device.backing.datastore
+					if datastore:
+						tmp_dict['reponame'] = datastore.name
+						tmp_dict['capacity']  = device.capacityInKB/1024/1024 # converting bytes to GB
+						#tmp_dict['used_size'] = (datastore.summary.capacity - datastore.summary.freeSpace)/1024/1024/1024
+						tmp_dict['disk'] = device.backing.fileName.split('/')[1]
+				else:
+					tmp_dict['reponame'] = ''
+					tmp_dict['disk'] = ''
+					tmp_dict['capacity']= 0
+					#tmp_dict['used_size'] = 0
+				repo_dict['vmware_disklist'].append(tmp_dict)
+		result.append(repo_dict)
+
+		"""hardware = vm.config.hardware
 		for each_vm_hardware in hardware.device:
 			if (each_vm_hardware.key >= 2000) and (each_vm_hardware.key < 3000):
 				tmp_dict = {}
@@ -208,12 +226,15 @@ def create_json():
 					disk = (each_vm_hardware.backing.fileName).split('/')[1]
 					tmp_dict['disk'] = disk
 					tmp_dict['capacity'] = each_vm_hardware.capacityInKB/1024/1024	
+					tmp_dict['used_space'] = (vm.summary.quickStats .hostMemoryUsage/1024) + (vm.summary.quickStats .guestMemoryUsage/1024)
 				except:
 					tmp_dict['reponame'] = ''
 					tmp_dict['disk'] = ''
 					tmp_dict['capacity'] = 0
 				repo_dict['vmware_disklist'].append(tmp_dict)
-		result.append(repo_dict)
+		result.append(repo_dict)"""
+
+
 	si = SmartConnect(host='10.66.100.15',
                      user='svc-juice',
                      pwd='bnDhPNavNs@^64Y-',
@@ -226,7 +247,26 @@ def create_json():
 		repo_dict['vmhost'] = vm.runtime.host.name
 		repo_dict['vmname'] = vm.config.name
 		repo_dict['vmware_disklist'] = []
-		hardware = vm.config.hardware
+
+		for device in vm.config.hardware.device:
+                        if (device.key >= 2000) and (device.key < 3000):
+                                tmp_dict = {}
+                                if hasattr(device.backing, 'fileName'):
+                                        datastore = device.backing.datastore
+                                        if datastore:
+                                                tmp_dict['reponame'] = datastore.name
+                                                tmp_dict['capacity']  = device.capacityInKB/1024/1024 # converting bytes to GB
+                                                #tmp_dict['used_size'] = (datastore.summary.capacity - datastore.summary.freeSpace)/1024/1024/1024
+                                                tmp_dict['disk'] = device.backing.fileName.split('/')[1]
+                                else:
+                                        tmp_dict['reponame'] = ''
+                                        tmp_dict['disk'] = ''
+                                        tmp_dict['capacity']= 0
+                                        #tmp_dict['used_size'] = 0
+                                repo_dict['vmware_disklist'].append(tmp_dict)
+                result.append(repo_dict)
+
+		"""hardware = vm.config.hardware
 		for each_vm_hardware in hardware.device:
 			if (each_vm_hardware.key >= 2000) and (each_vm_hardware.key < 3000):
 				tmp_dict = {}
@@ -235,7 +275,9 @@ def create_json():
 				disk = each_vm_hardware.backing.fileName.split('/')[1]
 				tmp_dict['disk'] = disk
 				tmp_dict['capacity'] = each_vm_hardware.capacityInKB/1024/1024
+				tmp_dict['used_space'] = (vm.summary.quickStats .hostMemoryUsage/1024) + (vm.summary.quickStats .guestMemoryUsage/1024)
 				repo_dict['vmware_disklist'].append(tmp_dict)
-		result.append(repo_dict)
+		result.append(repo_dict)"""
+
 	with open('webapp/JSON/vmware.json', 'w') as outfile:
 		json.dump(result, outfile)

@@ -62,7 +62,6 @@ def get_vmware(vmlist):
 				res_dict[vm['vmname']]['vmhost'] = vm['vmhost']
 				res_dict[vm['vmname']]['vm_name'] = vm['vmname']
 				res_dict[vm['vmname']]['total_size'] = 0
-				#res_dict[vm['vmname']]['used_size'] = vm['used_size']
 				res_dict[vm['vmname']]['disk_list'] = []
 				for detail in vm['vmware_disklist']:
 					if detail['reponame'] not in temp_dict:
@@ -76,6 +75,7 @@ def get_vmware(vmlist):
 					disk_dict['source'] =  'VMware'
 					size = math.ceil(detail['capacity'])
 					disk_dict['size'] = size
+					#disk_dict['used_size']= math.ceil(detail['used_size'])
 					res_dict[vm['vmname']]['total_size'] += size
 					res_dict[vm['vmname']]['disk_list'].append(disk_dict)
 					vmware_total_usage += size
