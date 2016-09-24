@@ -25,10 +25,10 @@ def get_result_usage(cust_acronym=[],server = [], server_acronym = ''):
         host_count = 0
         print ('length of host list = ', len(hostlist))
         if len(hostlist)>0:
-            result1,infini_usage,infini_error = get_infini(hostlist)
-            result2,ovm_usage,ovm_error = get_ovm(hostlist)
-            result3,vmware_usage,vmware_error = get_vmware(hostlist)
-            result4,par3_usage,par3_error = get_3par(hostlist)
+            result1,infini_allocated,infini_error = get_infini(hostlist)
+            result2,ovm_allocated,ovm_error = get_ovm(hostlist)
+            result3,vmware_allocated,vmware_error = get_vmware(hostlist)
+            result4,par3_allocated,par3_error = get_3par(hostlist)
             result = result1+result2+result3+result4
             #result.append(ovm_result)
             #result.append(infini_result)
@@ -50,8 +50,9 @@ def get_result_usage(cust_acronym=[],server = [], server_acronym = ''):
                     else:
                         res_dict[key]['server'] = key
                     res_dict[key]['vm_name'] = res[key]['vm_name'] if 'vm_name' in res[key] else ''
-            #usage = ovm_usage+infini_usage+par3_usage+vmware_usage
-            host_count = len(res_dict)
+            allocated = ovm_allocated+infini_allocated+par3_allocated+vmware_allocated
+            host_list = [val['server'].lower() for key,val in res_dict.items()]
+            host_count = len(set(host_list))
             """if len(ovm_error) > 0:
                  error.append(ovm_error) 
             if len(infini_error) > 0:
@@ -62,7 +63,7 @@ def get_result_usage(cust_acronym=[],server = [], server_acronym = ''):
                 error.append(vmware_error)"""
         else:
             res_dict,usage,error = {},0,''
-        return res_dict,host_count,usage,error
+        return res_dict,host_count,allocated,error
 
 #----------------- Module supporting Customer group create / Edit , 'Apply' button functionaly-------------#
 class AjaxRequest(View):
@@ -211,14 +212,15 @@ class CSVExport(View):
 		ajax = int(self.request.POST.get('ajax') or 0)
 		resdict = json.loads(self.request.POST.get('resdict'))
 		host_count = self.request.POST.get('host_count')
-		total_usage = self.request.POST.get('total_usage')
+		total_allocated = self.request.POST.get('total_allocated')
 		response = HttpResponse(content_type='text/csv')
 		response['Content-Disposition'] = 'attachment; filename=VMReport.csv'
 		writer = csv.writer(response, csv.excel)
 		response.write(u'\ufeff'.encode('utf8')) # BOM (optional...Excel needs it to open UTF-8 file properly)
 		writer.writerow([
                         smart_str('Server count = '+host_count ),
-                        smart_str('Total disk usage = '+total_usage),
+                        smart_str('Total disk allocated = '+total_allocated),
+
 		])
 		writer.writerow([
 			smart_str('VM Name'),
@@ -237,7 +239,7 @@ class CSVExport(View):
 				res_dict['diskname'] = disk.get('name')
 				res_dict['disksize'] = disk.get('size')
 				res_dict['vm'] = val.get('vm_name')
-				res_dict['servername'] = key if val.get('VMware') != 1 else val.get('vmhost')
+				res_dict['servername'] = val.get('server')#key if val.get('VMware') != 1 else val.get('vmhost')
 				result.append(res_dict)
 		for obj in result:
 			writer.writerow([
@@ -277,7 +279,7 @@ class Dashboard(View):
 		server_acronym = self.request.POST.get('server_acronym') or ''
 		cust_grplist = JuiceGroupnames.objects.all().order_by('name')
 		result=[]
-		total_usage = 0
+		total_allocated = 0
 		error_notify = ''
 		empty_notify  = ''
 		newserverlist = []
@@ -303,10 +305,10 @@ class Dashboard(View):
 			newserverlist = set(serverlist)
 			
 			if active_user == 1 :
-				res_dict,host_count,usage,error = get_result_usage(cust_acronym,server,server_acronym)	
+				res_dict,host_count,allocated,error = get_result_usage(cust_acronym,server,server_acronym)	
 			else:
-				res_dict,host_count,usage,error = get_result_usage(cust_acronym)
-			total_usage = usage
+				res_dict,host_count,allocated,error = get_result_usage(cust_acronym)
+			total_allocated = allocated
 			if len(error)  > 0:
 				error_notify = str(error)
 			if len(res_dict) == 0:
@@ -316,7 +318,7 @@ class Dashboard(View):
 					empty_notify = "No result matching the filters"
 		except Exception as e:
 			error_notify = "Error in Report caluclation - "+str(e)
-		return render(request,'webapp/dashboard.html',{'host_count':host_count,'error_notify':error_notify,'empty_notify':empty_notify,'resdict_csv':res_dict,'exclude_list':exclude_list,'resdict':OrderedDict(sorted(res_dict.items(), key=lambda t: t[0])),'active_user':active_user,'serverlist':newserverlist,'cust_grp':custgrp,'customergrouplist':cust_grplist,'total_usage':total_usage,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})
+		return render(request,'webapp/dashboard.html',{'host_count':host_count,'error_notify':error_notify,'empty_notify':empty_notify,'resdict_csv':res_dict,'exclude_list':exclude_list,'resdict':OrderedDict(sorted(res_dict.items(), key=lambda t: t[0])),'active_user':active_user,'serverlist':newserverlist,'cust_grp':custgrp,'customergrouplist':cust_grplist,'total_allocated':total_allocated,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})
 
 	
 	

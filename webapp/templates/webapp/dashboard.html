@@ -80,16 +80,17 @@ $(function ()
 		{% csrf_token %}
 		<input type="hidden" id ="csvpost" name='resdict' value="" />
 		<input type="hidden" id ="hostcount" name='host_count' value={{host_count}} />
-		<input type="hidden" id ="totalusage" name='total_usage' value={{total_usage}} />	
+		<input type="hidden" id ="totalallocated" name='total_allocated' value={{total_allocated}} />	
 		<button type="submit" id="CSVbutton" class="btn btn-primary"> CSV Export</button>
 	</form>
     </div>
     {%if error_notify == ''%}
         <div class="row">
 	  <div class="col-sm-4" style="border:1px; width:inherit; background-color: #99CCFF;">Server count  = {{host_count}}</div>
-	  <div class="col-sm-4" style="border:1px; width:inherit; background-color: #FFFF66;">Total Usage =  {{total_usage}}  </div>
+	  <div class="col-sm-4" style="border:1px; width:inherit; background-color: #FFFF66;">Total allocated space =  {{total_allocated}}  </div>
         </div>
 	{% for key, res in resdict.items %}
+ {{key}}
       <ul> 
         <li><h5><u>{{res.vm_name}}</u> (server- <b>{{res.server}}</b>)</h5>  Total Disk size = {{res.total_size}}</li>
        </ul>
