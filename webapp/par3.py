@@ -69,6 +69,7 @@ def get_3par(hostlist):
 					res_dict[server['name']]['volume_list'] = []
 					res_dict[server['name']]['total_size'] = 0
 					res_dict[server['name']]['disk_list'] = []	
+					res_dict[server['name']]['used_size'] = 0
 					for vl in vlunlist:
 						for vol in par3Volume_data: #['members']:
 							vol_dict = {}
@@ -85,6 +86,7 @@ def get_3par(hostlist):
 									vol_dict['WWN'] = vol['wwn']
 									res_dict[server['name']]['total_size'] += size #bytesto(vol['sizeMiB'],'g')
 									res_dict[server['name']]['disk_list'].append(vol_dict)
+									res_dict[server['name']]['used_size']+= vol_dict['used_size'] 
 					total_usage += res_dict[server['name']]['total_size'] 
 					if server['name'] in res_dict and len(res_dict[server['name']]['disk_list']) == 0:
 						res_dict.pop(server['name'],None) 

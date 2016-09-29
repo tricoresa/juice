@@ -41,6 +41,7 @@ def get_result_usage(cust_acronym=[],server = [], server_acronym = ''):
                     if key not in res_dict:
                         res_dict[key] = {'disk_list':[],'total_size':0,'vm_name':''}
                     res_dict[key]['disk_list']+= res[key]['disk_list']
+                    res_dict[key]['used_size'] = res[key]['used_size']
                     res_dict[key]['total_size'] += res[key]['total_size']
                     res_dict[key]['source'] = res[key]['source']
                     if res[key]['source'] == 'OVM': 
@@ -52,6 +53,8 @@ def get_result_usage(cust_acronym=[],server = [], server_acronym = ''):
                     res_dict[key]['vm_name'] = res[key]['vm_name'] if 'vm_name' in res[key] else ''
             allocated = ovm_allocated+infini_allocated+par3_allocated+vmware_allocated
             host_list = [val['server'].lower() for key,val in res_dict.items()]
+            vm_list = [val['vm_name'].lower() for key,val in res_dict.items()]
+            vm_count = len(set(vm_list))
             host_count = len(set(host_list))
             """if len(ovm_error) > 0:
                  error.append(ovm_error) 
@@ -63,7 +66,7 @@ def get_result_usage(cust_acronym=[],server = [], server_acronym = ''):
                 error.append(vmware_error)"""
         else:
             res_dict,usage,error = {},0,''
-        return res_dict,host_count,allocated,error
+        return res_dict,host_count,vm_count,allocated,error
 
 #----------------- Module supporting Customer group create / Edit , 'Apply' button functionaly-------------#
 class AjaxRequest(View):
@@ -217,11 +220,11 @@ class CSVExport(View):
 		response['Content-Disposition'] = 'attachment; filename=VMReport.csv'
 		writer = csv.writer(response, csv.excel)
 		response.write(u'\ufeff'.encode('utf8')) # BOM (optional...Excel needs it to open UTF-8 file properly)
-		writer.writerow([
-                        smart_str('Server count = '+host_count ),
-                        smart_str('Total disk allocated = '+total_allocated),
+		#writer.writerow([
+                #        smart_str('Server count = '+host_count ),
+                #        smart_str('Total disk allocated = '+total_allocated),
 
-		])
+		#])
 		writer.writerow([
 			smart_str('VM Name'),
 			smart_str('Server Name'),
@@ -286,6 +289,7 @@ class Dashboard(View):
 		cust_acronym = []
 		res_dict = {}
 		host_count = 0
+		vm_count = 0
 		try:
 			if custgrp > 0:
 				cust_acronym = JuiceGroupnames.objects.get(groupnameid = custgrp).acronym
@@ -305,9 +309,9 @@ class Dashboard(View):
 			newserverlist = set(serverlist)
 			
 			if active_user == 1 :
-				res_dict,host_count,allocated,error = get_result_usage(cust_acronym,server,server_acronym)	
+				res_dict,host_count,vm_count,allocated,error = get_result_usage(cust_acronym,server,server_acronym)	
 			else:
-				res_dict,host_count,allocated,error = get_result_usage(cust_acronym)
+				res_dict,host_count,vm_count,allocated,error = get_result_usage(cust_acronym)
 			total_allocated = allocated
 			if len(error)  > 0:
 				error_notify = str(error)
@@ -318,7 +322,7 @@ class Dashboard(View):
 					empty_notify = "No result matching the filters"
 		except Exception as e:
 			error_notify = "Error in Report caluclation - "+str(e)
-		return render(request,'webapp/dashboard.html',{'host_count':host_count,'error_notify':error_notify,'empty_notify':empty_notify,'resdict_csv':res_dict,'exclude_list':exclude_list,'resdict':OrderedDict(sorted(res_dict.items(), key=lambda t: t[0])),'active_user':active_user,'serverlist':newserverlist,'cust_grp':custgrp,'customergrouplist':cust_grplist,'total_allocated':total_allocated,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})
+		return render(request,'webapp/dashboard.html',{'vm_count':vm_count,'host_count':host_count,'error_notify':error_notify,'empty_notify':empty_notify,'resdict_csv':res_dict,'exclude_list':exclude_list,'resdict':OrderedDict(sorted(res_dict.items(), key=lambda t: t[0])),'active_user':active_user,'serverlist':newserverlist,'cust_grp':custgrp,'customergrouplist':cust_grplist,'total_allocated':total_allocated,'back_url':request.META.get('HTTP_REFERER') or '/webapp'})
 
 	
 	

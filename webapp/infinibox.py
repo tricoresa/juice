@@ -72,6 +72,7 @@ def get_infini(hostlist,limit=1000):
                         res_dict[ host['name']]['source'] = 'Infinibox'
                         res_dict[host['name']]['total_size'] = 0
                         res_dict[host['name']]['disk_list'] = []
+                        res_dict[host['name']]['used_size']=0
                         vol_list = []
                         luns=host['luns']
                         for lun in luns:
@@ -89,6 +90,7 @@ def get_infini(hostlist,limit=1000):
                                            vol_dict['size'] = size
                                            vol_dict['used_size'] = bytesto(volume['used'],'g')
                                            res_dict[host['name']]['disk_list'].append(vol_dict)
+                                           res_dict[host['name']]['used_size']+=vol_dict['used_size']
                         infini_total_usage += res_dict[host['name']]['total_size']
                         if host['name'] in res_dict and len(res_dict[host['name']]['disk_list']) == 0:
                             res_dict.pop(host['name'],None)

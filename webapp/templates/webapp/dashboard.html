@@ -86,13 +86,14 @@ $(function ()
     </div>
     {%if error_notify == ''%}
         <div class="row">
+	  <div class="col-sm-4" style="border:1px; width:inherit; background-color: #99CCFF;">Total VM = {{vm_count}}</div>
 	  <div class="col-sm-4" style="border:1px; width:inherit; background-color: #99CCFF;">Server count  = {{host_count}}</div>
 	  <div class="col-sm-4" style="border:1px; width:inherit; background-color: #FFFF66;">Total allocated space =  {{total_allocated}}  </div>
         </div>
 	{% for key, res in resdict.items %}
  {{key}}
       <ul> 
-        <li><h5><u>{{res.vm_name}}</u> (server- <b>{{res.server}}</b>)</h5>  Total Disk size = {{res.total_size}}</li>
+        <li><h5><u>{{res.vm_name}}</u> (server- <b>{{res.server}}</b>)</h5>  Total disk size = {{res.total_size}}   Used disk size = {{res.used_size}}</li>
        </ul>
        <table class='table table-bordered table-hover table-striped' style="table-layout: fixed; word-wrap: break-word;">
          <tr class="text-center">

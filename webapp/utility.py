@@ -307,6 +307,7 @@ def get_ovm(vlist):
 			res_dict[vmname]['virtualist'] = []
 			res_dict[vmname]['disk_list'] = []
 			res_dict[vmname]['total_size'] = 0
+			res_dict[vmname]['used_size'] = 'Unknown'
 			res_dict[vmname]['servername'] = servername
 			id = v['id']['value']
 			for disk in vmdiskmapping_data:
