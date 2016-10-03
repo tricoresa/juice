@@ -64,8 +64,6 @@ def get_vmware(vmlist):
 				res_dict[vm['vmname']]['total_size'] = 0
 				res_dict[vm['vmname']]['disk_list'] = []
 				res_dict[vm['vmname']]['used_size'] = 'Unknown'
-				print (vm['vm_usage'])
-				res_dict[vm['vmname']]['reserved_size']=vm['vm_reserved'] or 0
 				for detail in vm['vmware_disklist']:
 					if detail['reponame'] not in temp_dict:
 						temp_dict[detail['reponame']] = []

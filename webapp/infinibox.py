@@ -65,7 +65,7 @@ def get_infini(hostlist,limit=1000):
                         hostlist = infini_host_data #['result']
                 for host in hostlist:
                     if 'luns' in host and 'name' in host:
-                        print ('in infini hpsts')
+                        print ('in infini hosts')
                         #if 'name' in host and host['name'] not in res_dict:
                         res_dict = {}
                         res_dict[ host['name']] = {}

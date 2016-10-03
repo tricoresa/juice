@@ -29,6 +29,7 @@ def get_result_usage(cust_acronym=[],server = [], server_acronym = ''):
             result2,ovm_allocated,ovm_error = get_ovm(hostlist)
             result3,vmware_allocated,vmware_error = get_vmware(hostlist)
             result4,par3_allocated,par3_error = get_3par(hostlist)
+            print (len(result1),len(result2),len(result3),len(result4))
             result = result1+result2+result3+result4
             #result.append(ovm_result)
             #result.append(infini_result)
