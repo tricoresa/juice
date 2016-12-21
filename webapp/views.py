@@ -152,7 +152,7 @@ class Summary(View):
 		else:
 			groupObj = JuiceGroupnames.objects.all().order_by('name')
 		page = int(self.request.GET.get('page') or 1)
-		limit =int(self.request.GET.get('limit') or 20)
+		limit =int(self.request.GET.get('limit') or 100)
 		pagination_res = pagination(groupObj,limit,page)
 		
 		try:
