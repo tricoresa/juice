@@ -66,7 +66,7 @@ CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
 CELERYBEAT_SCHEDULE = {
     'juice_daily': {
         'task': 'webapp.tasks.create_json',
-        'schedule': crontab(hour=7, minute=30),
+        'schedule': crontab(minute=0, hour='*/12'),
         'args': ()
     },
 }
