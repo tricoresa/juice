@@ -20,7 +20,9 @@ from collections import OrderedDict
 def get_result_usage(cust_acronym=[],server = [], server_acronym = ''):
         result = []
         usage = 0
+        allocated = 0
         error = []
+        vm_count = 0
         hostlist  = applyfilter(cust_acronym,server,server_acronym)
         host_count = 0
         print ('length of host list = ', len(hostlist))

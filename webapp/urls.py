@@ -17,4 +17,5 @@ urlpatterns = patterns('',
     url(r'^customergroup/',views.CustomerGroup.as_view()),
     url(r'^customer_grplist/',views.CustomerGroupList.as_view()),
     url(r'^rest_disk/',rest.diskDetails.as_view()),
+    url(r'^rest_allocated_disk/',rest.diskAllocated.as_view()),
 )
